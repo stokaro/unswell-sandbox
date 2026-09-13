@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Playground — Unswell</title>
+<meta name="description" content="Paste English prose or Python and see what the Unswell rule catalog marks, in your browser tab. The same engine as the CLI, compiled to WebAssembly. The text never leaves the page.">
+<link rel="canonical" href="https://play.unswell.dev/">
+<!--
+  The page ships no inline script, so script-src needs no hash and nothing
+  inline can run. 'wasm-unsafe-eval' is what compiling unswell.wasm needs: a
+  dedicated Worker started from a same-origin script with no CSP headers of its
+  own inherits this policy, so the directive has to be here rather than on the
+  Worker. `npm run build` fails if an inline script appears without a matching
+  hash.
+-->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; worker-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#f3f4f3">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preload" href="assets/fonts/crimson-pro-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/ibm-plex-mono-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="assets/app.css">
+</head>
+<body>
+<a class="skip" href="#workbench">Skip to the editor</a>
+
+<header class="site-header">
+  <a class="brand" href="/">
+    <svg width="28" height="28" viewBox="0 0 28 28" aria-label="Unswell">
+      <rect x="0" y="0" width="28" height="28" rx="7" fill="#1B1F22"/>
+      <path d="M5.5 15.5 L9.2 9.8 L13 18.2 L16.8 9.8 L18.4 13.6 L22.5 13.6" fill="none" stroke="#5FB3B3" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="wordmark"><span class="wordmark-un">un</span><span class="wordmark-swell">swell</span></span>
+  </a>
+  <span class="header-tag">/ playground</span>
+  <nav class="header-nav" aria-label="Site">
+    <a href="https://unswell.dev">Docs</a>
+    <a href="https://github.com/stokaro/unswell">GitHub</a>
+  </nav>
+</header>
+
+<main class="shell">
+
+  <section class="intro">
+    <div class="intro-text">
+      <h1>Paste a paragraph. Watch the residue surface.</h1>
+      <p>The same rule catalog as the CLI, compiled to WebAssembly and run on
+      this page. Your text stays in the tab.</p>
+    </div>
+
+    <!--
+      The engine strip is meaningful before any JavaScript runs: it says what it
+      is waiting for. Every later state is written into the same three slots by
+      src/engine-strip.ts, so there is one place a visitor looks to find out
+      what the runtime is doing.
+    -->
+    <div class="engine" id="engine" data-state="idle" role="status" aria-live="polite">
+      <svg class="engine-glyph" width="18" height="18" viewBox="0 0 28 28" aria-hidden="true">
+        <path d="M5.5 15.5 L9.2 9.8 L13 18.2 L16.8 9.8 L18.4 13.6 L22.5 13.6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="engine-label" id="engine-label">engine</span>
+      <span class="engine-detail" id="engine-detail">waiting for scripts</span>
+      <div class="engine-track" id="engine-track" aria-hidden="true"><div class="engine-fill" id="engine-fill"></div></div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <div class="segmented" role="group" aria-label="Scoring profile" id="profile-control">
+      <button type="button" data-value="technical" aria-pressed="true">technical</button>
+      <button type="button" data-value="strict" aria-pressed="false">strict</button>
+    </div>
+
+    <div class="segmented" role="group" aria-label="Input format" id="format-control">
+      <button type="button" data-value="markdown" aria-pressed="true">Markdown</button>
+      <button type="button" data-value="python" aria-pressed="false">Python</button>
+    </div>
+
+    <button type="button" class="btn" id="load-sample">Load AI-flavoured sample</button>
+    <button type="button" class="btn" id="load-revision">Load the revision</button>
+    <button type="button" class="btn btn-quiet" id="clear">Clear</button>
+
+    <span class="toolbar-spacer"></span>
+    <span class="wordcount" id="wordcount">0 words</span>
+    <button type="button" class="btn btn-primary" id="analyze">Analyze <kbd>↵</kbd></button>
+  </div>
+
+  <section class="workbench" id="workbench" tabindex="-1">
+    <div class="pane" id="pane">
+      <!--
+        Two views of one text, never both. The textarea IS the document in edit
+        mode; the report is rendered from the same string plus the engine's
+        spans, so nothing is retyped and nothing can drift between them.
+      -->
+      <div class="edit" id="edit">
+        <label class="visually-hidden" for="input">Text to analyze</label>
+        <textarea id="input" spellcheck="false" autocapitalize="off" autocomplete="off"
+          placeholder="Paste or type English prose — a README section, a PR description, a docstring…"></textarea>
+        <p class="hint"><kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>Enter</kbd> to analyze</p>
+      </div>
+      <div class="report" id="report" hidden></div>
+      <div class="sweep" id="sweep" aria-hidden="true"></div>
+    </div>
+
+    <aside class="rail" id="rail" aria-label="Findings">
+      <div class="rail-head">
+        <span>Findings</span>
+        <span class="rail-count" id="rail-count">— · technical</span>
+      </div>
+      <div class="rail-body" id="rail-body">
+        <p class="rail-empty">Nothing analyzed yet. Paste something, or load a
+        sample, then press Analyze.</p>
+      </div>
+    </aside>
+  </section>
+
+  <div class="legend">
+    <span class="swatch swatch-forbid">forbid</span>
+    <span class="swatch swatch-warning">warning</span>
+    <span class="swatch swatch-info">info</span>
+    <span class="legend-code" id="legend-code" hidden>code · never checked; comments and strings are</span>
+    <span class="legend-spacer"></span>
+    <span class="legend-note">Not an authorship detector. A finding is about the wording, whoever typed it.</span>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <span>© 2026 Unswell</span>
+  <nav aria-label="Footer">
+    <a href="https://unswell.dev">Docs</a>
+    <a href="https://github.com/stokaro/unswell">GitHub</a>
+  </nav>
+  <span class="footer-tag" id="footer-tag">MIT · Go · offline</span>
+</footer>
+
+<script type="module" src="dist/main.js"></script>
+</body>
+</html>

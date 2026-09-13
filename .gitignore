@@ -1,0 +1,16 @@
+# The materialized unswell tree and the workspace that points an editor at it.
+build/
+go.work
+go.work.sum
+
+# The wasm binary is ~46 MB; it is a build product, not a source. manifest.json
+# and wasm_exec.js beside it ARE committed -- see the README.
+web/vendor/unswell/*.wasm
+
+node_modules/
+web/dist/
+
+# The staging directory the deploy workflow builds; never committed.
+/_site/
+
+.DS_Store

@@ -1,0 +1,25 @@
+{
+  "name": "@stokaro/unswell-sandbox-web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Browser playground for the Unswell engine compiled to Go js/wasm.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "npm run test:unit && npm run test:samples",
+    "test:unit": "node --test 'src/**/*.test.mjs'",
+    "test:samples": "node ../test/samples.mjs",
+    "test:contract": "node ../test/contract.mjs",
+    "build": "node build.mjs",
+    "check-site": "node scripts/check-site.mjs --root .",
+    "test:ui": "node scripts/ui-probe.mjs --base http://127.0.0.1:8790/"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.12",
+    "typescript": "^5.9.2"
+  }
+}
