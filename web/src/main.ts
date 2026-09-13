@@ -21,19 +21,19 @@ import { renderRail } from "./rail.ts";
 type Format = "markdown" | "python";
 type Profile = "technical" | "strict";
 
-const SAMPLES: Record<Format, { flavoured: string; revised: string; label: string }> = {
+const SAMPLES: Record<Format, { flavored: string; revised: string; label: string }> = {
   markdown: {
-    flavoured: "samples/ai-flavoured.md",
+    flavored: "samples/ai-flavored.md",
     revised: "samples/revised.md",
-    label: "Load AI-flavoured sample",
+    label: "Load AI-flavored sample",
   },
   python: {
-    flavoured: "samples/retry_client.py",
+    flavored: "samples/retry_client.py",
     // There is one revision and it is prose. The Python sample's point is the
     // extraction boundary, not a second before-and-after, so the button loads
     // the same revision and the format switches with it.
     revised: "samples/revised.md",
-    label: "Load AI-flavoured retry_client.py",
+    label: "Load AI-flavored retry_client.py",
   },
 };
 
@@ -263,7 +263,7 @@ clearButton.addEventListener("click", () => {
   input.focus();
 });
 
-sampleButton.addEventListener("click", () => void loadSample(SAMPLES[format].flavoured));
+sampleButton.addEventListener("click", () => void loadSample(SAMPLES[format].flavored));
 revisionButton.addEventListener("click", () => {
   // The revision is prose. Loading it while the page is in Python mode would
   // analyze Markdown as Python and find nothing, so the mode follows the text.

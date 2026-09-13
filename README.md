@@ -76,7 +76,7 @@ From a clean build on darwin/arm64 with go1.27.1, against
 | rules in the catalog | 40 |
 | boot to `ready()`, node | ~490 ms |
 | boot to `ready()`, headless Chrome, localhost | ~560 ms |
-| one analysis of the AI-flavoured sample | 150–190 ms |
+| one analysis of the AI-flavored sample | 150–190 ms |
 
 ## The pin
 
@@ -269,7 +269,7 @@ the real engine on every `make test`:
 
 | File | technical | strict |
 | --- | --- | --- |
-| `ai-flavoured.md` | 12 findings, max index 58.7, gate **fails** | 14 findings, gate fails |
+| `ai-flavored.md` | 12 findings, max index 58.7, gate **fails** | 14 findings, gate fails |
 | `revised.md` | **0 findings**, gate passes | 0 findings, gate passes |
 | `retry_client.py` | 10 findings, max index 56.0, gate **fails** | 11 findings, gate fails |
 

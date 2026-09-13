@@ -145,7 +145,7 @@ fi
 #    referenced by an HTML attribute the CDN would have had to serve already.
 # ---------------------------------------------------------------------------
 
-for asset in dist/main.js dist/worker.js samples/ai-flavoured.md samples/revised.md samples/retry_client.py; do
+for asset in dist/main.js dist/worker.js samples/ai-flavored.md samples/revised.md samples/retry_client.py; do
 	code=$(get "${base}${asset}" /dev/null)
 	if [ "$code" = "200" ]; then
 		note "smoke: OK  $asset -> 200"

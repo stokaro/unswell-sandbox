@@ -2,7 +2,7 @@
  * Checks that the three sample documents still mean what the page says they do.
  *
  * The samples are the page's only claim about the engine that a visitor reads
- * before pressing anything: one document is described as AI-flavoured, one as
+ * before pressing anything: one document is described as AI-flavored, one as
  * its revision, and the revision is described as clean. All three run through
  * the real engine here, so a rule change upstream that turns the revision dirty
  * fails the build instead of making the page a liar.
@@ -27,7 +27,7 @@ const samples = join(repoRoot, "web/samples");
  */
 const expectations = [
   {
-    file: "ai-flavoured.md",
+    file: "ai-flavored.md",
     format: "markdown",
     minFindings: 12,
     // The page describes this one as failing the gate under both profiles.
