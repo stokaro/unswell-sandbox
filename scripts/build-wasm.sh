@@ -168,7 +168,16 @@ fi
 #    the shim's digest is recorded next to the binary's.
 # ---------------------------------------------------------------------------
 
+# The manifest records the toolchain, and CI re-links to compare, so the two
+# hosts have to agree on the compiler. The submodule's go.mod states the
+# module's MINIMUM Go version, not the one this site is built with, so it is
+# the wrong pin: reading it let a 1.25 runner disagree with a 1.27 desk.
+# .go-version is the single declaration both read.
+pinned_go=$(tr -d '[:space:]' < "$repo/.go-version")
 go_version=$(go version | awk '{print $3}')
+if [ "$go_version" != "go$pinned_go" ]; then
+	die "this Go is $go_version; .go-version pins go$pinned_go. Install it or change the pin."
+fi
 goroot=$(go env GOROOT)
 wasm_exec="$goroot/lib/wasm/wasm_exec.js"
 [ -f "$wasm_exec" ] || wasm_exec="$goroot/misc/wasm/wasm_exec.js"
