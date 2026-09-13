@@ -32,7 +32,7 @@ const WASM_BINARY = "vendor/unswell/unswell.wasm";
 // that a build which stops producing one still fails.
 const UNREFERENCED = [
   "dist/worker.js",
-  "samples/ai-flavoured.md",
+  "samples/ai-flavored.md",
   "samples/revised.md",
   "samples/retry_client.py",
 ];

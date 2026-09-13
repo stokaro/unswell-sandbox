@@ -193,7 +193,7 @@ async function main() {
   })`);
   const r = JSON.parse(report);
 
-  check(r.marks > 0, "the AI-flavoured sample is marked in the document", `${r.marks} mark element(s)`);
+  check(r.marks > 0, "the AI-flavored sample is marked in the document", `${r.marks} mark element(s)`);
   check(r.notes >= 12, "every finding has a note in the rail", `${r.notes} note(s)`);
   check(r.paras >= 5, "the document is segmented into paragraphs", `${r.paras} paragraph(s)`);
   check(r.gate === "FAIL", "the gate card reports the engine's decision", r.gate);
@@ -261,7 +261,7 @@ async function main() {
   );
   check(
     (await evaluate('document.getElementById("load-sample").textContent')) ===
-      "Load AI-flavoured retry_client.py",
+      "Load AI-flavored retry_client.py",
     "the sample button renames itself in Python mode",
   );
   check(

@@ -46,14 +46,14 @@ if (policy === null) {
 
 /* ---------- The samples the page offers are really there ---------- */
 
-for (const sample of ["samples/ai-flavoured.md", "samples/revised.md", "samples/retry_client.py"]) {
+for (const sample of ["samples/ai-flavored.md", "samples/revised.md", "samples/retry_client.py"]) {
   if (!existsSync(sample)) {
     problems.push(`${sample} is missing; a toolbar button fetches it by that exact path`);
   }
 }
 
 const source = readFileSync("src/main.ts", "utf8");
-for (const sample of ["samples/ai-flavoured.md", "samples/revised.md", "samples/retry_client.py"]) {
+for (const sample of ["samples/ai-flavored.md", "samples/revised.md", "samples/retry_client.py"]) {
   if (!source.includes(sample)) {
     problems.push(`src/main.ts no longer names ${sample}; the file and the page have drifted apart`);
   }
