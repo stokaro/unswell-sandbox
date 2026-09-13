@@ -133,7 +133,7 @@ jobs:
       - uses: actions/setup-go@v7
         if: steps.wasm-cache.outputs.cache-hit != 'true'
         with:
-          go-version-file: third_party/unswell/go.mod
+          go-version-file: .go-version
           # Cached below instead, keyed on the pin rather than on go.sum, so a
           # runtime/ change reuses the compiled standard library and the whole
           # of Unswell's dependency tree.
