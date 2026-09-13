@@ -1,0 +1,300 @@
+{
+  "unswellVersion": "v0.1.0-alpha.3",
+  "unswellCommit": "2a2a6d441534cbc4be15d298898345d1a529c8b5",
+  "unswellCommitDate": "2026-09-12T11:30:01+02:00",
+  "goVersion": "go1.27.1",
+  "builtAt": "2026-09-13T11:07:52Z",
+  "wasmExec": {
+    "file": "wasm_exec.js",
+    "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
+    "bytes": 16992
+  },
+  "wasm": {
+    "file": "unswell.wasm",
+    "sha256": "00a8571c86b43b5f43d1a2ab29714bf7ca2d9b9e7530feedf8891f80309f9385",
+    "bytes": 47786668,
+    "gzipBytes": 21793562
+  },
+  "rules": [
+    {
+      "id": "density.connective-overuse",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "Remove repeated transitions where the connection is already clear."
+    },
+    {
+      "id": "filler.announced-importance",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "warning",
+      "summary": "State the fact without announcing its importance."
+    },
+    {
+      "id": "filler.empty-transition",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "warning",
+      "summary": "Check whether these repeated opening transitions add information."
+    },
+    {
+      "id": "filler.modern-world-opening",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "warning",
+      "summary": "Replace the generic opening with the document's subject."
+    },
+    {
+      "id": "filler.section-announcement",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "warning",
+      "summary": "Replace repeated section announcements with their subject."
+    },
+    {
+      "id": "filler.stacked-hedging",
+      "version": "1",
+      "group": "inflation",
+      "severity": "warning",
+      "summary": "Check whether each hedge expresses a distinct uncertainty; retain needed qualifications."
+    },
+    {
+      "id": "filler.weak-intensifiers",
+      "version": "1",
+      "group": "inflation",
+      "severity": "warning",
+      "summary": "Check whether these intensifiers add a measurable distinction."
+    },
+    {
+      "id": "filler.wordy-phrase",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "warning",
+      "summary": "Consider a shorter phrase that preserves the condition or meaning."
+    },
+    {
+      "id": "format.em-dash-density",
+      "version": "1",
+      "group": "readability",
+      "severity": "warning",
+      "summary": "Em dashes exceed the selected local density; punctuation can be intentional."
+    },
+    {
+      "id": "format.list-fragmentation",
+      "version": "1",
+      "group": "readability",
+      "severity": "warning",
+      "summary": "Several short lists fragment this section; check whether the grouping helps readers."
+    },
+    {
+      "id": "hype.absolute-claim",
+      "version": "1",
+      "group": "inflation",
+      "severity": "warning",
+      "summary": "Check whether this guarantee has conditions or exceptions."
+    },
+    {
+      "id": "hype.metaphor-cluster",
+      "version": "1",
+      "group": "inflation",
+      "severity": "warning",
+      "summary": "Replace clustered stock metaphors with specific properties."
+    },
+    {
+      "id": "hype.modifier-cluster",
+      "version": "1",
+      "group": "inflation",
+      "severity": "warning",
+      "summary": "Replace the cluster of evaluative modifiers with specific properties."
+    },
+    {
+      "id": "hype.vague-praise",
+      "version": "1",
+      "group": "inflation",
+      "severity": "warning",
+      "summary": "Replace general praise with a specific property or measured result."
+    },
+    {
+      "id": "policy.banned-phrases",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "error",
+      "summary": "Remove a phrase forbidden by this editorial policy."
+    },
+    {
+      "id": "readability.grade-metric",
+      "version": "2",
+      "group": "readability",
+      "severity": "warning",
+      "summary": "The ARI formula exceeds the selected level; consider the audience and keep necessary technical terms."
+    },
+    {
+      "id": "readability.long-paragraph",
+      "version": "1",
+      "group": "readability",
+      "severity": "warning",
+      "summary": "Consider paragraph boundaries while keeping each condition with the statement it qualifies."
+    },
+    {
+      "id": "repetition.exact-sentence",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "This sentence is repeated; consider whether every occurrence is needed."
+    },
+    {
+      "id": "repetition.heading-echo",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "The first paragraph closely echoes its heading; check whether it adds information."
+    },
+    {
+      "id": "repetition.near-sentence",
+      "version": "2",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "These sentences have high lexical overlap; check for repeated information."
+    },
+    {
+      "id": "repetition.ngram-density",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "This phrase recurs in a short prose window; check whether each use is needed."
+    },
+    {
+      "id": "repetition.paragraph-openers",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "Several paragraphs repeat the same opening formula."
+    },
+    {
+      "id": "repetition.paragraph-overlap",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "These prose blocks have high lexical overlap; check for repeated information."
+    },
+    {
+      "id": "repetition.sentence-openers",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "Several sentences repeat the same opening; consider removing repeated setup."
+    },
+    {
+      "id": "repetition.summary-echo",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "This summary has high lexical overlap with preceding prose; check what it adds."
+    },
+    {
+      "id": "repetition.syntax-template",
+      "version": "1",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "Several sentences repeat a POS shape; check whether the structure serves the text."
+    },
+    {
+      "id": "scaffold.ai-self-reference",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "error",
+      "summary": "Remove the assistant's self-reference."
+    },
+    {
+      "id": "scaffold.chat-preamble",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "error",
+      "summary": "Start with the subject instead of a conversational acknowledgment."
+    },
+    {
+      "id": "scaffold.dive-in",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "warning",
+      "summary": "Start with the subject instead of announcing the explanation."
+    },
+    {
+      "id": "scaffold.follow-up-offer",
+      "version": "1",
+      "group": "scaffolding",
+      "severity": "warning",
+      "summary": "Remove the conversational follow-up offer from this document."
+    },
+    {
+      "id": "syntax.long-sentence",
+      "version": "1",
+      "group": "syntax-load",
+      "severity": "warning",
+      "summary": "Consider splitting this long sentence without losing its conditions."
+    },
+    {
+      "id": "syntax.nominalization-chain",
+      "version": "1",
+      "group": "syntax-load",
+      "severity": "warning",
+      "summary": "Consider a direct verb while preserving the subject, conditions, and technical meaning."
+    },
+    {
+      "id": "syntax.not-only-density",
+      "version": "2",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "Repeated paired contrasts make this passage formulaic."
+    },
+    {
+      "id": "syntax.noun-stack",
+      "version": "4",
+      "group": "syntax-load",
+      "severity": "warning",
+      "summary": "Review this common-noun sequence; keep established technical terms."
+    },
+    {
+      "id": "syntax.paired-contrast-density",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "Check whether repeated paired contrasts carry distinct information."
+    },
+    {
+      "id": "syntax.parenthetical-load",
+      "version": "2",
+      "group": "syntax-load",
+      "severity": "warning",
+      "summary": "Review the load of balanced insertions; retain conditions, qualifications, and necessary definitions."
+    },
+    {
+      "id": "syntax.passive-candidate-density",
+      "version": "1",
+      "group": "syntax-load",
+      "severity": "warning",
+      "summary": "Several sentences contain be-plus-participle candidates; review voice only where the meaning allows it."
+    },
+    {
+      "id": "syntax.rhetorical-question-density",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "Check repeated question-and-short-answer transitions."
+    },
+    {
+      "id": "syntax.triad-density",
+      "version": "1",
+      "group": "inflation",
+      "severity": "warning",
+      "summary": "Check repeated triads of evaluative modifiers against specific properties."
+    },
+    {
+      "id": "syntax.whether-preface-density",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "Reduce repeated whether-you prefaces while preserving alternatives."
+    }
+  ]
+}

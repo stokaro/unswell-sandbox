@@ -1,0 +1,1095 @@
+/*
+ * play.unswell.dev
+ *
+ * One page, one light palette, two typefaces. The palette is declared once here
+ * and used by name everywhere; a color that appears as a literal below the
+ * token block is a mistake.
+ *
+ * The two faces are not decoration. Crimson Pro carries prose -- the headline,
+ * the document in Markdown mode, and the note messages -- because those are the
+ * thing being judged. IBM Plex Mono carries everything that is machinery: the
+ * chrome, the labels, the scores, the rule ids, and the document itself in
+ * Python mode, where the text IS code.
+ */
+
+/* ---------- Fonts ---------- */
+
+@font-face {
+  font-family: "Crimson Pro";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(fonts/crimson-pro-var-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Crimson Pro";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(fonts/crimson-pro-var-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Crimson Pro";
+  font-style: italic;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(fonts/crimson-pro-var-italic-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Crimson Pro";
+  font-style: italic;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(fonts/crimson-pro-var-italic-latin-ext.woff2) format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/ibm-plex-mono-400-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/ibm-plex-mono-400-symbols.woff2) format("woff2");
+  unicode-range: U+2010-2027, U+2030-205E, U+2190-21BB, U+2500-2570, U+25A0-25FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/ibm-plex-mono-500-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(fonts/ibm-plex-mono-500-symbols.woff2) format("woff2");
+  unicode-range: U+2010-2027, U+2030-205E, U+2190-21BB, U+2500-2570, U+25A0-25FF;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/ibm-plex-mono-600-latin.woff2) format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(fonts/ibm-plex-mono-600-symbols.woff2) format("woff2");
+  unicode-range: U+2010-2027, U+2030-205E, U+2190-21BB, U+2500-2570, U+25A0-25FF;
+}
+
+/* ---------- Tokens ---------- */
+
+:root {
+  --ink: #1b1f22;
+  --muted: #5c6664;
+  --faint: #7a8482;
+  --hairline: #d9dddb;
+  --border-light: #e7eae9;
+  --page: #f3f4f3;
+  --card: #ffffff;
+  --aside: #f8f9f8;
+  --teal-dark: #1f6f73;
+  --teal-bright: #5fb3b3;
+
+  --forbid: #a23b2b;
+  --forbid-tint: #fbe4df;
+  --warning: #9a6b00;
+  --warning-tint: #fbefd3;
+  --info: #1f6f73;
+  --info-tint: #e3eef0;
+  --pass: #2e7d4f;
+  --inert: #b8c0bd;
+  --dim: #8a9391;
+
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --text: "Crimson Pro", Georgia, "Times New Roman", serif;
+
+  color-scheme: light;
+}
+
+/* ---------- Reset ---------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--teal-dark);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 10;
+  background: var(--card);
+  padding: 10px 14px;
+  border: 1px solid var(--hairline);
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.skip:focus {
+  left: 12px;
+  top: 12px;
+}
+
+/* ---------- Header ---------- */
+
+.site-header {
+  flex: 0 0 auto;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-inline: 24px;
+  background: var(--page);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.wordmark {
+  font-family: var(--mono);
+  font-weight: 600;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+}
+
+.wordmark-un {
+  color: var(--ink);
+}
+
+.wordmark-swell {
+  color: var(--teal-dark);
+}
+
+.header-tag {
+  font-size: 12px;
+  color: var(--faint);
+}
+
+.header-nav {
+  margin-left: auto;
+  display: flex;
+  gap: 18px;
+}
+
+.header-nav a {
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.header-nav a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---------- Shell ---------- */
+
+.shell {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 26px 24px 18px;
+}
+
+/* ---------- Headline and engine strip ---------- */
+
+.intro {
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 28px;
+  align-items: start;
+}
+
+.intro h1 {
+  margin: 0 0 8px;
+  font-family: var(--text);
+  font-weight: 400;
+  font-size: clamp(26px, 2.6vw, 36px);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.intro p {
+  margin: 0;
+  max-width: 56ch;
+  font-family: var(--text);
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.engine {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 8px;
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: 5px;
+  padding: 11px 13px;
+  font-size: 12px;
+  overflow: hidden;
+  color: var(--inert);
+}
+
+.engine-glyph {
+  flex: none;
+  transition: color 0.4s ease;
+}
+
+.engine-label {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.engine-detail {
+  text-align: right;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.engine-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: var(--border-light);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.engine-fill {
+  height: 100%;
+  width: 0;
+  background: var(--teal-bright);
+  transition: width 0.15s linear;
+}
+
+.engine[data-state="loading"] {
+  color: var(--teal-bright);
+}
+
+.engine[data-state="loading"] .engine-track {
+  opacity: 1;
+}
+
+.engine[data-state="loading"] .engine-glyph {
+  animation: engine-pulse 1.4s ease-in-out infinite;
+}
+
+.engine[data-state="ready"] {
+  color: var(--teal-dark);
+}
+
+.engine[data-state="busy"] {
+  color: var(--teal-bright);
+}
+
+.engine[data-state="busy"] .engine-glyph {
+  animation: engine-pulse 0.9s ease-in-out infinite;
+}
+
+.engine[data-state="failed"] {
+  color: var(--forbid);
+  border-color: var(--forbid);
+  background: var(--forbid-tint);
+}
+
+.engine[data-state="failed"] .engine-detail {
+  color: var(--forbid);
+  white-space: normal;
+}
+
+@keyframes engine-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* ---------- Toolbar ---------- */
+
+.toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--hairline);
+  border-radius: 4px;
+  overflow: hidden;
+  background: var(--card);
+}
+
+.segmented button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--hairline);
+}
+
+.segmented button:hover {
+  color: var(--ink);
+}
+
+.segmented button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--page);
+}
+
+.btn {
+  appearance: none;
+  border: 1px solid var(--hairline);
+  background: var(--card);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  color: var(--ink);
+  border-color: var(--faint);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.btn-quiet {
+  border-color: transparent;
+  background: transparent;
+}
+
+.btn-quiet:hover:not(:disabled) {
+  border-color: var(--hairline);
+}
+
+.btn-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--page);
+  border-radius: 999px;
+  padding: 7px 16px;
+  font-weight: 500;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #000;
+  border-color: #000;
+  color: var(--page);
+}
+
+.btn-primary kbd {
+  font: inherit;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+.toolbar-spacer {
+  flex: 1 1 auto;
+}
+
+.wordcount {
+  font-size: 12px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Workbench ---------- */
+
+.workbench {
+  flex: 1 1 auto;
+  min-height: 320px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  border-radius: 8px;
+  box-shadow: 0 30px 60px -40px rgba(27, 31, 34, 0.35);
+  overflow: hidden;
+}
+
+.workbench:focus {
+  outline: none;
+}
+
+/* ---------- Document pane ---------- */
+
+.pane {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 30px 40px 40px 52px;
+}
+
+/* [hidden] is display:none in the UA sheet, and display:flex below would beat
+   it. The page toggles these two with .hidden, so the override has to be
+   explicit or the editor stays rendered underneath the report. */
+.edit[hidden],
+.report[hidden] {
+  display: none !important;
+}
+
+.edit {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+#input {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 220px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  resize: none;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--text);
+  font-size: 21px;
+  line-height: 1.6;
+  outline: none;
+}
+
+#input::placeholder {
+  color: var(--inert);
+}
+
+body[data-format="python"] #input {
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  tab-size: 4;
+}
+
+.hint {
+  flex: none;
+  margin: 18px 0 0;
+  font-family: var(--mono);
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.hint kbd {
+  font: inherit;
+}
+
+/* ---------- Report ---------- */
+
+.report {
+  font-family: var(--text);
+  font-size: 21px;
+  line-height: 1.6;
+}
+
+body[data-format="python"] .report {
+  font-family: var(--mono);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+/* Each paragraph carries its own gutter: a score and a bar whose color is the
+   score. The gutter sits in the pane's left padding, so the prose measure is
+   unaffected by whether a paragraph has a score at all. */
+.para {
+  position: relative;
+  margin: 0 0 1.1em;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  animation: para-rise 0.34s cubic-bezier(0.2, 0.7, 0.3, 1) backwards;
+}
+
+.para:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes para-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The gutter lives in the pane's left padding, so a paragraph with a score and
+   one without have the same measure. Score first, then the bar, so the bar is
+   the thing next to the text it describes. */
+.para-gutter {
+  position: absolute;
+  left: -44px;
+  top: 0.34em;
+  bottom: 0.2em;
+  width: 36px;
+  display: flex;
+  align-items: stretch;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.para-bar {
+  flex: none;
+  width: 2px;
+  align-self: stretch;
+  border-radius: 1px;
+  background: var(--inert);
+}
+
+.para[data-band="low"] .para-bar { background: var(--pass); }
+.para[data-band="mid"] .para-bar { background: var(--warning); }
+.para[data-band="high"] .para-bar { background: var(--forbid); }
+
+.para-score {
+  flex: 1 1 auto;
+  text-align: right;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Code that was never checked. Not greyed out to hide it -- greyed out to say
+   the engine did not look at it, which is the whole point in Python mode. */
+.code-dim {
+  color: var(--dim);
+}
+
+/* A mark. The fill says "this exact wording"; the index says which note. */
+.mark {
+  border-radius: 3px;
+  padding: 0.06em 0;
+  cursor: pointer;
+  scroll-margin-block: 40px;
+  transition: background-color 0.14s ease, color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.mark-forbid { background: var(--forbid-tint); }
+.mark-warning { background: var(--warning-tint); }
+.mark-info { background: var(--info-tint); }
+
+.mark-index {
+  font-family: var(--mono);
+  font-size: 0.52em;
+  font-weight: 500;
+  vertical-align: super;
+  line-height: 0;
+  margin-left: 1px;
+  user-select: none;
+}
+
+.mark-forbid .mark-index { color: var(--forbid); }
+.mark-warning .mark-index { color: var(--warning); }
+.mark-info .mark-index { color: var(--info); }
+
+/* A span that covers a whole sentence or a whole paragraph is not a phrase, so
+   it is not filled: a wide block of color would claim the rule objected to
+   every word in it. An underline says "this stretch", which is what the rule
+   said. */
+.mark.is-stretch {
+  background: none;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+}
+
+.mark.is-stretch.mark-forbid { text-decoration-color: var(--forbid); }
+.mark.is-stretch.mark-warning { text-decoration-color: var(--warning); }
+.mark.is-stretch.mark-info { text-decoration-color: var(--info); }
+
+.mark.is-active {
+  color: var(--page);
+  box-shadow: 0 0 0 2px currentColor;
+}
+
+.mark.is-active .mark-index {
+  color: var(--page);
+}
+
+.mark-forbid.is-active { background: var(--forbid); box-shadow: 0 0 0 2px var(--forbid); }
+.mark-warning.is-active { background: var(--warning); box-shadow: 0 0 0 2px var(--warning); }
+.mark-info.is-active { background: var(--info); box-shadow: 0 0 0 2px var(--info); }
+
+.mark.is-stretch.is-active {
+  color: var(--page);
+  text-decoration-line: none;
+}
+
+/* The scanning sweep, over the pane while the engine is working. */
+.sweep {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(95, 179, 179, 0) 0%,
+    rgba(95, 179, 179, 0.16) 45%,
+    rgba(95, 179, 179, 0.3) 50%,
+    rgba(95, 179, 179, 0.16) 55%,
+    rgba(95, 179, 179, 0) 100%
+  );
+  background-size: 100% 34%;
+  background-repeat: no-repeat;
+}
+
+.is-analyzing .sweep {
+  opacity: 1;
+  animation: sweep-scan 1.1s linear infinite;
+}
+
+@keyframes sweep-scan {
+  from { background-position: 0 -40%; }
+  to { background-position: 0 140%; }
+}
+
+/* ---------- Notes rail ---------- */
+
+.rail {
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--aside);
+  border-left: 1px solid var(--border-light);
+}
+
+.rail-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border-light);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.rail-count {
+  margin-left: auto;
+  letter-spacing: 0.05em;
+  color: var(--faint);
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.rail-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 14px 16px 20px;
+}
+
+.rail-empty {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--faint);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  padding: 9px 10px;
+}
+
+.stat-label {
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.stat-value {
+  margin-top: 3px;
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.stat-value.is-pass { color: var(--pass); }
+.stat-value.is-fail { color: var(--forbid); }
+
+.stat-note {
+  margin-top: 1px;
+  font-size: 10.5px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-track {
+  margin-top: 6px;
+  height: 2px;
+  background: var(--border-light);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.stat-fill {
+  height: 100%;
+  background: var(--inert);
+}
+
+.stat-fill[data-band="low"] { background: var(--pass); }
+.stat-fill[data-band="mid"] { background: var(--warning); }
+.stat-fill[data-band="high"] { background: var(--forbid); }
+
+.note {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 9px;
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  padding: 10px 11px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  scroll-margin-block: 16px;
+  transition: border-color 0.14s ease, box-shadow 0.14s ease;
+}
+
+.note:hover {
+  border-color: var(--hairline);
+}
+
+.note.is-active {
+  border-color: currentColor;
+  box-shadow: 0 0 0 1px currentColor;
+}
+
+.note-forbid.is-active { color: var(--forbid); }
+.note-warning.is-active { color: var(--warning); }
+.note-info.is-active { color: var(--info); }
+
+.note-badge {
+  grid-row: 1 / span 3;
+  width: 19px;
+  height: 19px;
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.note-forbid .note-badge { background: var(--forbid-tint); color: var(--forbid); }
+.note-warning .note-badge { background: var(--warning-tint); color: var(--warning); }
+.note-info .note-badge { background: var(--info-tint); color: var(--info); }
+
+.note-rule {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--faint);
+  overflow-wrap: anywhere;
+}
+
+.note-message {
+  font-family: var(--text);
+  font-size: 15px;
+  line-height: 1.4;
+  color: var(--ink);
+  margin-top: 2px;
+}
+
+.note-meta {
+  margin-top: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.note-meta .sev-forbid { color: var(--forbid); }
+.note-meta .sev-warning { color: var(--warning); }
+.note-meta .sev-info { color: var(--info); }
+
+.note-clean {
+  display: grid;
+  gap: 6px;
+  padding: 14px 12px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.note-clean strong {
+  color: var(--pass);
+  font-weight: 600;
+}
+
+.rail-error {
+  padding: 12px;
+  border: 1px solid var(--forbid);
+  background: var(--forbid-tint);
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--forbid);
+  overflow-wrap: anywhere;
+}
+
+/* ---------- Legend and footer ---------- */
+
+.legend {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.swatch {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch::before {
+  content: "";
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+}
+
+.swatch-forbid { color: var(--forbid); }
+.swatch-forbid::before { background: var(--forbid-tint); box-shadow: inset 0 0 0 1px var(--forbid); }
+.swatch-warning { color: var(--warning); }
+.swatch-warning::before { background: var(--warning-tint); box-shadow: inset 0 0 0 1px var(--warning); }
+.swatch-info { color: var(--info); }
+.swatch-info::before { background: var(--info-tint); box-shadow: inset 0 0 0 1px var(--info); }
+
+.legend-code {
+  color: var(--dim);
+}
+
+.legend-spacer {
+  flex: 1 1 auto;
+}
+
+.legend-note {
+  color: var(--faint);
+}
+
+.site-footer {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 14px 24px 20px;
+  font-size: 11.5px;
+  color: var(--faint);
+}
+
+.site-footer nav {
+  display: flex;
+  gap: 14px;
+}
+
+.site-footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.site-footer a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.footer-tag {
+  margin-left: auto;
+}
+
+/* ---------- Narrow ---------- */
+
+@media (max-width: 980px) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 760px) {
+  .shell {
+    padding-inline: 16px;
+  }
+
+  .site-header,
+  .site-footer {
+    padding-inline: 16px;
+  }
+
+  .workbench {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .rail {
+    border-left: 0;
+    border-top: 1px solid var(--border-light);
+  }
+
+  /* Two scrollers stacked inside one scroller is a trap on a phone, so the
+     panes give up their own scrolling and the page scrolls instead. That means
+     the workbench must size to its content rather than to what is left of the
+     viewport: as a flex item it would keep the height the row gave it while the
+     rows inside it overflowed, and the rail would be drawn over the document.
+   */
+  .workbench {
+    flex: 0 0 auto;
+    min-height: 0;
+  }
+
+  .pane,
+  .rail-body {
+    overflow: visible;
+  }
+
+  .rail-body {
+    /* Without a floor the rail collapses to its cards and the border above it
+       sits tight against the last note. */
+    padding-bottom: 24px;
+  }
+
+  .pane {
+    padding: 22px 20px 26px 46px;
+  }
+
+  #input {
+    font-size: 18px;
+  }
+
+  .report {
+    font-size: 18px;
+  }
+}
+
+/* ---------- Reduced motion ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  /* The sweep is the one animation whose absence has to be visible: it is the
+     only sign the engine is working. It stays as a static tint. */
+  .is-analyzing .sweep {
+    opacity: 1;
+    background: rgba(95, 179, 179, 0.1);
+  }
+}
