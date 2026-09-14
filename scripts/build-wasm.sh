@@ -144,6 +144,15 @@ else
 	echo "build-wasm: copied $runtime into $srcdir"
 fi
 
+# The origin pack is a file in the pinned tree, and go:embed cannot reach out of
+# its own package, so it is copied next to the browser entry point. The build
+# fails without it rather than shipping a page whose origin channel is silently
+# off.
+pack=research/origin/packs/unswell-origin-lexical-v1.json
+[ -f "$srcdir/$pack" ] || die "$pack is missing from the pinned tree"
+cp "$srcdir/$pack" "$srcdir/cmd/unswell-wasm/origin-pack.json"
+echo "build-wasm: embedded $(basename "$pack")"
+
 # The rule catalog has to come from the rule registry, so the helper that walks
 # it is built inside the module and removed again; it is not part of what ships.
 tooldir="$srcdir/cmd/internal/buildtools/catalog"

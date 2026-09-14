@@ -89,6 +89,11 @@ type unitStamp struct {
 	Words   int     `json:"words"`
 	Score   float64 `json:"score"`
 	Context string  `json:"context,omitempty"`
+	// Origin is the experimental origin estimate, present only for a paragraph
+	// the pack accepted. OriginStatus carries the reason when it is absent, so
+	// the page can say why instead of leaving a blank.
+	Origin       *float64 `json:"origin,omitempty"`
+	OriginStatus string   `json:"originStatus,omitempty"`
 }
 
 // findingStub is one finding as the page marks it: where it is, what it says,
@@ -192,12 +197,14 @@ func buildPayload(
 			continue
 		}
 		out.Units = append(out.Units, unitStamp{
-			ID:      assessment.UnitID,
-			Start:   assessment.Span.Start,
-			End:     assessment.Span.End,
-			Words:   assessment.Words,
-			Score:   assessment.EffectiveSlopScore,
-			Context: contextAt(contexts, assessment.Span),
+			ID:           assessment.UnitID,
+			Start:        assessment.Span.Start,
+			End:          assessment.Span.End,
+			Words:        assessment.Words,
+			Score:        assessment.EffectiveSlopScore,
+			Context:      contextAt(contexts, assessment.Span),
+			Origin:       assessment.OriginEstimate,
+			OriginStatus: assessment.OriginStatus,
 		})
 		for _, contribution := range effectiveContributions(assessment) {
 			points[contribution.FindingID] += contribution.Effective
