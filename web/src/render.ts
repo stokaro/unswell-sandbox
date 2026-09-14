@@ -274,11 +274,29 @@ function renderUnit(
   gutter.append(score, bar);
   para.append(gutter);
 
+  // The origin estimate is a separate channel from the score and must not be
+  // read as part of it. It appears only where the pack accepted the paragraph,
+  // which is the 25 to 89 word band it was fitted on, and it decides nothing.
+  if (typeof unit.origin === "number") {
+    const origin = document.createElement("span");
+    origin.className = "para-origin";
+    origin.dataset.level = unit.origin >= 0.5 ? "high" : "low";
+    origin.textContent = `${Math.round(unit.origin * 100)}%`;
+    origin.title =
+      "Experimental origin estimate: similarity to a training class of generated " +
+      "documentation. It is not a quality judgment, not a verdict about who wrote " +
+      "this, and it decides no gate.";
+    para.append(origin);
+  }
+
   // The accessible version of the gutter: a decorative bar and a bare number
   // read as noise, so the paragraph carries the same fact as a sentence.
   para.setAttribute(
     "aria-label",
-    `Paragraph index ${formatScore(unit.score)} out of 100, ${unit.words} words`,
+    `Paragraph index ${formatScore(unit.score)} out of 100, ${unit.words} words` +
+      (typeof unit.origin === "number"
+        ? `, origin estimate ${Math.round(unit.origin * 100)} percent`
+        : ""),
   );
 
   for (const slice of sliceRange(unit.start, unit.end, findings, indices)) {

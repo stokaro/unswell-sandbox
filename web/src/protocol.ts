@@ -89,6 +89,14 @@ export interface Unit {
   words: number;
   score: number;
   context?: string;
+  /**
+   * The experimental origin estimate, present only for a paragraph the shipped
+   * pack accepted. `originStatus` carries the reason when it is absent, which
+   * is most paragraphs: the pack was fitted between 25 and 89 words and
+   * abstains outside that.
+   */
+  origin?: number;
+  originStatus?: string;
 }
 
 export interface Report {

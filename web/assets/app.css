@@ -639,6 +639,29 @@ body[data-format="python"] .report {
   white-space: nowrap;
 }
 
+/* The origin estimate sits outside the paragraph, on the other side from the
+   index, so the two channels are not read as one number. It is deliberately
+   quiet: it decides nothing and its corpus is not qualified. */
+.para-origin {
+  position: absolute;
+  right: 0;
+  top: 0;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  background: var(--surface);
+  cursor: help;
+}
+
+.para-origin[data-level="high"] {
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
 /* Code that was never checked. Not greyed out to hide it -- greyed out to say
    the engine did not look at it, which is the whole point in Python mode. */
 .code-dim {

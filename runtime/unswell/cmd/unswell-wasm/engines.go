@@ -3,6 +3,7 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"sync"
 
@@ -24,17 +25,37 @@ var engineProfiles = []string{"technical", "strict"}
 // it is chosen to read as what it is rather than as a real path.
 const defaultSourceName = "playground"
 
+// originPack is the fitted origin model this build ships. It is an experimental
+// research artifact over a corpus that is not qualified, it decides no gate, and
+// it estimates similarity to a training class rather than anything about who
+// wrote a text. The page says as much beside every number it produces.
+//
+//go:embed origin-pack.json
+var originPack []byte
+
+// originContexts is the extraction policy the pack was fitted under. A pack is
+// refused unless the run prepares text the same way, and the builtin default
+// leaves this section implicit, which hashes differently. Writing the same list
+// out changes no finding -- the contexts are the ones the builtin profiles
+// already use -- and it is what lets the channel run at all.
+const originContexts = "extraction:\n  contexts: [comment, heading, list-item, paragraph, string, table-cell]\n"
+
+// originChannel turns the channel on for an experimental pack and keeps it out
+// of the gate. An incompatible pack abstains rather than failing the run: the
+// visitor came to see findings, and losing them to a model mismatch would be a
+// worse answer than a missing estimate.
+const originChannel = "origin:\n  model: pack\n  accept_experimental: true\n  on_incompatible: unavailable\n"
+
 // profileConfig is the whole configuration the playground supplies: one builtin
-// profile layer and nothing else. Anything more would make the page's findings
-// depend on settings the visitor cannot see.
+// profile layer, the extraction contexts the origin pack requires, and the
+// origin channel itself. Anything more would make the page's findings depend on
+// settings the visitor cannot see.
 func profileConfig(profile string) []byte {
-	if profile == "technical" {
-		// The builtin default. Passing no config at all is the same policy and
-		// keeps the config hash the one a CLI run with no .unswell.yaml
-		// produces, which is what a visitor would reproduce locally.
-		return nil
+	layer := ""
+	if profile != "technical" {
+		layer = fmt.Sprintf("extends:\n  - builtin:%s-v1\n", profile)
 	}
-	return []byte(fmt.Sprintf("version: 1\nextends:\n  - builtin:%s-v1\n", profile))
+	return []byte("version: 1\n" + layer + originContexts + originChannel)
 }
 
 // engineSet holds one engine per profile over one shared NLP provider.
@@ -78,8 +99,9 @@ func (s *engineSet) engine(profile string) (*unswell.Engine, error) {
 		return engine, nil
 	}
 	engine, err := unswell.New(unswell.Options{
-		Config: profileConfig(profile),
-		NLP:    s.provider,
+		Config:      profileConfig(profile),
+		NLP:         s.provider,
+		OriginModel: originPack,
 		// The page analyzes whatever was typed, including an empty box and a
 		// code file with no prose in it. An empty scan is a legitimate answer
 		// here -- "nothing to report" -- not an operational failure, so the

@@ -284,10 +284,38 @@ async function main() {
     `scrollTop=${scroll.clicked}`,
   );
 
+  /* ---------- The origin channel reaches the page ---------- */
+
+  // The pack abstains outside 25 to 89 words, which is most paragraphs, so the
+  // check is that the channel runs at all and labels what it produces.
+  const origin = await evaluate(`(() => {
+    const badges = [...document.querySelectorAll(".para-origin")];
+    const paras = document.querySelectorAll(".para").length;
+    return JSON.stringify({
+      paras,
+      badges: badges.length,
+      texts: badges.map(b => b.textContent),
+      titled: badges.every(b => (b.title || "").includes("not a quality judgment")),
+      levels: [...new Set(badges.map(b => b.dataset.level))],
+    });
+  })()`);
+  const o = JSON.parse(origin);
+  check(o.badges > 0, "the origin channel estimates at least one paragraph",
+    `${o.badges} of ${o.paras} paragraph(s)`);
+  check(o.texts.every(t => /^\d+%$/.test(t)), "each estimate reads as a percentage",
+    o.texts.join(","));
+  check(o.titled, "each estimate says it is not a quality judgment");
+  check(o.levels.every(l => l === "high" || l === "low"), "each estimate carries a level",
+    o.levels.join(","));
+  console.log(`      AI-flavored sample origin: ${o.texts.join(", ") || "none in band"}`);
+
   /* ---------- The revision is clean ---------- */
 
   await evaluate('document.getElementById("load-revision").click()');
   await waitForReport(evaluate);
+  const revised = JSON.parse(await evaluate(`JSON.stringify(
+    [...document.querySelectorAll(".para-origin")].map(b => b.textContent))`));
+  console.log(`      revision origin: ${revised.join(", ") || "none in band"}`);
   const clean = await evaluate(`JSON.stringify({
     marks: document.querySelectorAll("#report .mark").length,
     gate: document.querySelector(".stat-value").textContent,
