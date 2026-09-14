@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.3",
-  "unswellCommit": "2a2a6d441534cbc4be15d298898345d1a529c8b5",
-  "unswellCommitDate": "2026-09-12T11:30:01+02:00",
+  "unswellVersion": "v0.1.0-alpha.4",
+  "unswellCommit": "7e5b93398903ce2f108c84ebf8168dd48d6696df",
+  "unswellCommitDate": "2026-09-13T17:34:33+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-09-13T11:24:01Z",
+  "builtAt": "2026-09-14T08:25:17Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "f655b5a2538c5cf036c4c6161eefa8574735cc9c99d611923a5153f2250c2637",
-    "bytes": 47786906,
-    "gzipBytes": 21793796
+    "sha256": "fefe8b2474c7a91ff1590c725da391840897fd5a55d1d2483250e2a285b1ea24",
+    "bytes": 47977232,
+    "gzipBytes": 21839112
   },
   "rules": [
     {
@@ -165,7 +165,7 @@
     },
     {
       "id": "repetition.paragraph-openers",
-      "version": "1",
+      "version": "2",
       "group": "repetition",
       "severity": "warning",
       "summary": "Several paragraphs repeat the same opening formula."
