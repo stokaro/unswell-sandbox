@@ -332,29 +332,32 @@ document.addEventListener("keydown", (event) => {
 /**
  * Makes one finding the active one, everywhere.
  *
- * Both directions scroll their counterpart into view, and both are idempotent,
- * so a hover that follows a click does not fight it.
+ * Scrolling is asked for by the caller, not by this function, because only
+ * some of the ways to reach a finding should move the page. A pointer moving
+ * across the report highlights what it passes and leaves the scroll position
+ * alone; a click, a key press, or focus arriving by keyboard brings the
+ * counterpart into view. It is idempotent, so a hover that follows a click
+ * does not fight it.
  */
 function focusFinding(id: string | null, scroll: "mark" | "note" | "none" = "none"): void {
-  if (activeFinding === id) return;
-  if (activeFinding !== null) {
-    for (const mark of marks.get(activeFinding) ?? []) mark.classList.remove("is-active");
-    notes.get(activeFinding)?.classList.remove("is-active");
+  if (activeFinding !== id) {
+    if (activeFinding !== null) {
+      for (const mark of marks.get(activeFinding) ?? []) mark.classList.remove("is-active");
+      notes.get(activeFinding)?.classList.remove("is-active");
+    }
+    activeFinding = id;
+    if (id !== null) {
+      for (const mark of marks.get(id) ?? []) mark.classList.add("is-active");
+      notes.get(id)?.classList.add("is-active");
+    }
   }
-  activeFinding = id;
-  if (id === null) return;
+  if (id === null || scroll === "none") return;
 
-  const elements = marks.get(id) ?? [];
-  for (const mark of elements) mark.classList.add("is-active");
-  const note = notes.get(id);
-  note?.classList.add("is-active");
-
-  if (scroll === "mark" && elements[0]) {
-    elements[0].scrollIntoView({ block: "nearest", behavior: motion() });
-  }
-  if (scroll === "note" && note) {
-    note.scrollIntoView({ block: "nearest", behavior: motion() });
-  }
+  // The scroll is not conditional on the finding having changed. A pointer
+  // resting on a finding has already made it active, and the click that
+  // follows still has to move the counterpart into view.
+  const target = scroll === "mark" ? (marks.get(id) ?? [])[0] : notes.get(id);
+  target?.scrollIntoView({ block: "nearest", behavior: motion() });
 }
 
 function motion(): ScrollBehavior {
@@ -366,7 +369,7 @@ function findingAt(target: EventTarget | null): string | null {
   return element?.dataset.finding ?? null;
 }
 
-reportView.addEventListener("pointerover", (event) => focusFinding(findingAt(event.target), "note"));
+reportView.addEventListener("pointerover", (event) => focusFinding(findingAt(event.target)));
 reportView.addEventListener("click", (event) => focusFinding(findingAt(event.target), "note"));
 reportView.addEventListener("focusin", (event) => focusFinding(findingAt(event.target), "note"));
 reportView.addEventListener("keydown", (event) => {
@@ -377,7 +380,7 @@ reportView.addEventListener("keydown", (event) => {
   focusFinding(id, "note");
 });
 
-railBody.addEventListener("pointerover", (event) => focusFinding(findingAt(event.target), "mark"));
+railBody.addEventListener("pointerover", (event) => focusFinding(findingAt(event.target)));
 railBody.addEventListener("click", (event) => focusFinding(findingAt(event.target), "mark"));
 railBody.addEventListener("focusin", (event) => focusFinding(findingAt(event.target), "mark"));
 

@@ -234,6 +234,56 @@ async function main() {
   check(link.noteActive === true, "hovering a note activates it");
   check(link.markActive === true, "hovering a note activates its mark in the document");
 
+  /* ---------- Hovering never moves the page; clicking does ---------- */
+
+  // A pointer crossing the rail on its way somewhere else must not throw the
+  // reader's place away. Only a deliberate click scrolls. The scrollers are the
+  // document pane and the rail body, not the elements the findings sit in.
+  const scrolling = await evaluate(`(() => {
+    const pane = document.querySelector(".pane");
+    const rail = document.getElementById("rail-body");
+    const notes = [...document.querySelectorAll(".note")];
+    const marks = [...document.querySelectorAll("#report .mark")];
+    const lastMark = marks[marks.length - 1];
+    const note = document.querySelector('.note[data-finding="' + lastMark.dataset.finding + '"]');
+    pane.scrollTop = 0;
+    rail.scrollTop = 0;
+    note.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+    return JSON.stringify({
+      notes: notes.length,
+      paneScrollable: pane.scrollHeight > pane.clientHeight,
+      finding: lastMark.dataset.finding,
+    });
+  })()`);
+  const scroll = JSON.parse(scrolling);
+
+  // The scroll is smooth unless the visitor asked otherwise, so it lands a few
+  // frames after the event rather than during it. Both readings wait, or the
+  // hover reading would report zero whatever the page does.
+  await sleep(700);
+  scroll.hovered = Number(await evaluate('String(document.querySelector(".pane").scrollTop)'));
+  await evaluate(
+    `document.querySelector('.note[data-finding="${scroll.finding}"]')` +
+      `.dispatchEvent(new MouseEvent("click", { bubbles: true }))`,
+  );
+  await sleep(700);
+  scroll.clicked = Number(await evaluate('String(document.querySelector(".pane").scrollTop)'));
+  check(
+    scroll.notes > 1 && scroll.paneScrollable,
+    "the sample is long enough for the document pane to scroll",
+    `${scroll.notes} note(s), scrollable=${scroll.paneScrollable}`,
+  );
+  check(
+    scroll.hovered === 0,
+    "hovering a note leaves the document pane where it was",
+    `scrollTop=${scroll.hovered}`,
+  );
+  check(
+    scroll.clicked > 0,
+    "clicking a note brings its mark into view",
+    `scrollTop=${scroll.clicked}`,
+  );
+
   /* ---------- The revision is clean ---------- */
 
   await evaluate('document.getElementById("load-revision").click()');
