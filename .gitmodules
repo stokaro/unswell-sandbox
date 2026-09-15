@@ -1,4 +1,0 @@
-[submodule "third_party/unswell"]
-	path = third_party/unswell
-	url = https://github.com/stokaro/unswell.git
-	shallow = false

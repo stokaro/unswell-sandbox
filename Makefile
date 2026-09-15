@@ -1,15 +1,22 @@
 # The sandbox has no Go module of its own; everything is built inside a
-# materialized copy of the pinned Unswell submodule. See scripts/build-wasm.sh.
+# materialized copy of the commit third_party/unswell.pin names. See
+# scripts/build-wasm.sh.
 
 SHELL := /bin/sh
 
 .POSIX:
-.PHONY: wasm build-web serve check-site smoke test test-contract test-samples \
+.PHONY: wasm pin build-web serve check-site smoke test test-contract test-samples \
 	typecheck test-unit ui-probe dev-tree clean
 
 # wasm builds web/vendor/unswell/{unswell.wasm,wasm_exec.js,manifest.json}.
 wasm:
 	scripts/build-wasm.sh
+
+# pin moves the playground to another Unswell commit and records it in
+# third_party/unswell.pin. `make pin REF=v0.1.0-alpha.4` takes a tag or a
+# commit; with no REF it takes the tip of main. Run `make wasm` after it.
+pin:
+	scripts/pin-unswell.sh $(REF)
 
 # build-web installs the pinned npm dependencies and bundles the page's
 # TypeScript into web/dist. It does not touch the wasm; `make wasm` does that,
@@ -31,7 +38,7 @@ serve:
 # check-site is the gate the deploy workflow runs before publishing: the CNAME,
 # every href/src and CSS url() resolving, the font licenses present, no
 # github.io address, and the manifest agreeing with both the wasm and the
-# submodule pin. Run it before pushing and CI will not tell you anything you
+# recorded pin. Run it before pushing and CI will not tell you anything you
 # did not already know.
 check-site:
 	node web/scripts/check-site.mjs --root web

@@ -1,0 +1,11 @@
+# The Unswell commit this playground is built from. Every deploy is built from
+# exactly this commit, so the version the page prints names a real revision.
+#
+# Bump with: scripts/pin-unswell.sh [ref]     (default: origin/main)
+#
+# version and date are what git reports for commit. scripts/build-wasm.sh
+# checks all three against git before it builds, so a hand-edited line fails
+# the build rather than mislabeling a binary.
+commit f3d09fd3aeaeb355d6519b9cacb98598f149ef6d
+version v0.1.0-alpha.4-33-gf3d09fd3aeae
+date 2026-09-15T09:01:06+02:00

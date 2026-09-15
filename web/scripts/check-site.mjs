@@ -14,7 +14,6 @@
 // Exit status is 0 with no findings, 1 with any.
 
 import { createHash } from "node:crypto";
-import { execFileSync } from "node:child_process";
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, posix } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -239,7 +238,7 @@ for (const file of [...pages, ...walk(root, [".css"])]) {
 }
 
 // ---------------------------------------------------------------------------
-// 5. The manifest and the binaries agree, and both agree with the submodule
+// 5. The manifest and the binaries agree, and both agree with the recorded
 //    pin. This is the check that keeps a stale wasm from shipping beside
 //    freshly built JavaScript: the page reads its version, its commit and its
 //    byte count out of this file, so if the file describes a different build
@@ -252,26 +251,37 @@ if (!exists(manifestPath)) {
 } else {
   const manifest = JSON.parse(readText(manifestPath));
 
-  let pinned = "";
-  try {
-    const line = execFileSync("git", ["ls-files", "-s", "--", "third_party/unswell"], {
-      cwd: repoRoot,
-      encoding: "utf8",
-    }).trim();
-    const fields = line.split(/\s+/);
-    if (fields[0] === "160000") pinned = fields[1];
-  } catch (err) {
-    fail(`could not read the third_party/unswell pin from git: ${err.message}`);
+  // third_party/unswell.pin is three "key value" lines under a comment header.
+  // Reading it here rather than asking git keeps this check working in a
+  // checkout that was exported rather than cloned.
+  const pinPath = join(repoRoot, "third_party/unswell.pin");
+  const pin = new Map();
+  if (!exists(pinPath)) {
+    fail("third_party/unswell.pin is missing; there is no pin to compare the manifest against");
+  } else {
+    for (const line of readText(pinPath).split("\n")) {
+      const trimmed = line.trim();
+      if (trimmed === "" || trimmed.startsWith("#")) continue;
+      const space = trimmed.indexOf(" ");
+      if (space > 0) pin.set(trimmed.slice(0, space), trimmed.slice(space + 1).trim());
+    }
   }
 
-  if (!pinned) {
-    fail("third_party/unswell is not recorded as a submodule gitlink; there is no pin to compare against");
-  } else if (manifest.unswellCommit !== pinned) {
-    fail(
-      `manifest.unswellCommit is ${manifest.unswellCommit}, but third_party/unswell is pinned at ${pinned}. ` +
-        "Run `make wasm` and commit web/vendor/unswell/manifest.json.",
-      "web/vendor/unswell/manifest.json",
-    );
+  for (const [key, field] of [
+    ["commit", "unswellCommit"],
+    ["version", "unswellVersion"],
+  ]) {
+    const recorded = pin.get(key);
+    if (pin.size === 0) break;
+    if (!recorded) {
+      fail(`third_party/unswell.pin has no ${key} line`);
+    } else if (manifest[field] !== recorded) {
+      fail(
+        `manifest.${field} is ${manifest[field]}, but third_party/unswell.pin records ${recorded}. ` +
+          "Run `make wasm` and commit web/vendor/unswell/manifest.json.",
+        "web/vendor/unswell/manifest.json",
+      );
+    }
   }
 
   const binaries = [
