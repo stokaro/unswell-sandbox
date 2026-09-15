@@ -32,7 +32,7 @@ stays readable.
 
 ## Layout
 
-    third_party/unswell    pinned upstream, a submodule, never edited
+    third_party/unswell.pin  the upstream commit every build is made from
     upstream-patch/        empty, and meant to stay that way -- see below
     runtime/unswell/       new Go files copied into Unswell's module at build time
     scripts/               the wasm build, and the catalog helper it runs
@@ -65,8 +65,8 @@ the samples, the marks, the keyboard — then asserts by reading the DOM. Add
 
 ### Measured
 
-From a clean build on darwin/arm64 with go1.27.1, against
-`third_party/unswell` at `v0.1.0-alpha.3`:
+From a clean build on darwin/arm64 with go1.27.1, at the pin
+`v0.1.0-alpha.3`:
 
 | | |
 | --- | --- |
@@ -80,11 +80,23 @@ From a clean build on darwin/arm64 with go1.27.1, against
 
 ## The pin
 
-`third_party/unswell` is a submodule pinned at the tag `v0.1.0-alpha.3`
-(`2a2a6d441534`). The superproject's gitlink is the pin, and
-`scripts/build-wasm.sh` refuses to build unless the checkout matches it exactly
-and carries no local edits: a build from a dirty or moved submodule is not the
-build this repository claims to produce.
+`third_party/unswell.pin` is the pin: three lines naming the upstream commit,
+the version `git describe` gives it, and its commit date. It is the only place
+that records which engine the site is built from.
+
+Move it with `make pin`, which takes the tip of `main`, or `make pin
+REF=v0.1.0-alpha.4` for a tag or a commit. Then `make wasm` and commit both the
+pin and `web/vendor/unswell/manifest.json`.
+
+There is no submodule. `scripts/build-wasm.sh` fetches the pinned commit into
+`build/unswell-git`, a blobless bare mirror that holds the commit graph and the
+tags and pulls file contents only when asked. It is under a megabyte until the
+first build and about 40 MB after it, against 169 MB for a full clone.
+
+The build checks the pin against git rather than trusting it: the commit must
+exist, `git describe` must give the recorded version, and the commit date must
+match. A hand-edited line fails the build instead of mislabeling a binary, and
+`make check-site` makes the same comparison against the committed manifest.
 
 The build then assembles a disposable tree from three tracked inputs:
 
@@ -94,8 +106,8 @@ The build then assembles a disposable tree from three tracked inputs:
    tried to escape the overlay would land outside it and fail;
 3. `runtime/unswell/`, copied in at its target paths inside the module.
 
-`build/unswell-src` is gitignored and rebuilt from scratch on every run;
-`third_party/unswell` is never written to.
+`build/unswell-src` is gitignored and rebuilt from scratch on every run, and so
+is the mirror it is archived from.
 
 `upstream-patch/` is empty on purpose. Unswell builds for `GOOS=js GOARCH=wasm`
 unmodified — the engine never touches the network, discovers files, reads the
@@ -108,10 +120,10 @@ there is the goal state, not an oversight.
 rebuilt in CI. `manifest.json` and `wasm_exec.js` **are** in git, because the
 page reads its version stamp out of the manifest and because `wasm_exec.js` has
 to byte-match the toolchain that linked the binary. So when the
-`third_party/unswell` pin moves, run `make wasm` and commit the manifest and
-the shim the build rewrote. CI fails the deploy if you forget: it compares the
-manifest's `unswellCommit` against the submodule gitlink, and compares what it
-built against what you committed.
+pin moves, run `make wasm` and commit the manifest and the shim the build
+rewrote. CI fails the deploy if you forget: it compares the manifest's
+`unswellCommit` and `unswellVersion` against `third_party/unswell.pin`, and
+compares what it built against what you committed.
 
 `web/dist` is not in git either. CI bundles it. Locally, `make build-web`.
 
@@ -296,12 +308,10 @@ stops. `workflow_dispatch` re-runs a deploy by hand.
 page resolves to a real file; the files JavaScript reaches by path
 (`dist/worker.js`, the three samples) exist; the OFL texts sit beside the
 woff2 files; no `github.io` address appears anywhere; the committed manifest
-names the commit the submodule is pinned at. No Go and no 46 MB link, so it
+names the commit the pin records. No Go and no 46 MB link, so it
 fails fast.
 
-**deploy** — checks out the submodule with its tags (`git describe` inside it
-is where the version stamp comes from; a shallow clone would stamp a bare hash),
-restores or builds the wasm, verifies it against what is committed, runs
+**deploy** — reads the pin, restores or builds the wasm, verifies it against what is committed, runs
 `make test` against the linked binary, bundles, stages `_site`, runs the same
 site check with nothing exempt — the binary's sha256 and byte count against the
 manifest this time — asserts the artifact is under the Pages ceiling, and

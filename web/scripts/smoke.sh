@@ -191,7 +191,7 @@ wasm_gzip=$(json '.wasm.gzipBytes')
 
 note "smoke: OK  manifest: $served_version ($(printf '%s' "$served_commit" | cut -c1-12))"
 
-# The deploy passes the submodule pin it built from. If the origin serves a
+# The deploy passes the pin it built from. If the origin serves a
 # different one, what went out is not this commit's build.
 if [ -n "$expect_commit" ] && [ "$served_commit" != "$expect_commit" ]; then
 	problem "the origin serves unswellCommit $served_commit, this run deployed $expect_commit"

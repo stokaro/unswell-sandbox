@@ -1,13 +1,12 @@
 #!/bin/sh
 # Build web/vendor/unswell/{unswell.wasm,wasm_exec.js,manifest.json} from the
-# pinned Unswell submodule.
+# commit named in third_party/unswell.pin.
 #
 # The sandbox has no Go module of its own. Everything is built inside a
 # materialized copy of unswell at the pinned commit, so the browser entry point
 # lives under github.com/stokaro/unswell/... and the engine grows no public API
-# for the sake of a website. The copy is rebuilt from scratch on every run:
-# third_party/unswell is never written to, and build/unswell-src is never edited
-# by hand.
+# for the sake of a website. The copy is rebuilt from scratch on every run, and
+# build/unswell-src is never edited by hand.
 #
 # Usage:
 #   scripts/build-wasm.sh              build everything
@@ -29,7 +28,6 @@ export GOWORK GOFLAGS
 repo=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo"
 
-submodule=third_party/unswell
 srcdir=build/unswell-src
 outdir=web/vendor/unswell
 runtime=runtime/unswell
@@ -74,33 +72,35 @@ json_string() {
 }
 
 # ---------------------------------------------------------------------------
-# 1. The pin. The superproject's gitlink is the pin; the checkout must match it
-#    exactly and carry no local edits, or what gets built is not what this
-#    repository claims to build.
+# 1. The pin. third_party/unswell.pin names the commit, the version git
+#    describes it as, and its commit date. All three are checked against git
+#    rather than trusted, so an edited line fails the build instead of
+#    mislabeling a binary.
 # ---------------------------------------------------------------------------
 
-[ -d "$submodule/.git" ] || [ -f "$submodule/.git" ] ||
-	die "$submodule is not checked out; run: git submodule update --init"
+. "$repo/scripts/unswell-git.sh"
 
-pinned=$(git ls-files -s -- "$submodule" | awk '$1 == "160000" { print $2 }')
-[ -n "$pinned" ] || die "$submodule is not recorded as a submodule in the index"
+pinned=$(pin_field commit)
+unswell_version=$(pin_field version)
+unswell_date=$(pin_field date)
 
-actual=$(git -C "$submodule" rev-parse HEAD)
-[ "$pinned" = "$actual" ] ||
-	die "$submodule is at $actual but the pin is $pinned; run: git submodule update"
+case "$pinned" in
+*[!0-9a-f]* | "") die "$UNSWELL_PIN records commit $pinned, which is not a hexadecimal object name" ;;
+esac
+[ ${#pinned} -eq 40 ] || die "$UNSWELL_PIN records a $((${#pinned}))-character commit; the full 40 are needed"
 
-dirt=$(git -C "$submodule" status --porcelain)
-[ -z "$dirt" ] || die "$submodule has local modifications:
-$dirt"
+mirror_ready
+mirror_has "$pinned" || mirror_fetch
+mirror_has "$pinned" ||
+	die "$UNSWELL_REMOTE has no commit $pinned; run: scripts/pin-unswell.sh REF"
 
-# --abbrev is pinned because git sizes the default one from the repository's
-# object count, so the same commit describes as g2a2a6d441534 in a full clone
-# and g2a2a6d4 in a shallower one -- identical sources, different version
-# string, and a deploy gate that compares manifests fails on nothing. Twelve is
-# the width Go pseudo-versions use, and it makes the suffix the first twelve of
-# unswellCommit, which the manifest carries in full beside it.
-unswell_version=$(git -C "$submodule" describe --tags --always --abbrev=12)
-unswell_date=$(git -C "$submodule" show -s --format=%cI "$pinned")
+actual_version=$(git -C "$UNSWELL_MIRROR" describe --tags --always --abbrev=12 "$pinned")
+[ "$actual_version" = "$unswell_version" ] ||
+	die "$UNSWELL_PIN says version $unswell_version but git describes $pinned as $actual_version;\nrun: scripts/pin-unswell.sh $pinned"
+
+actual_date=$(git -C "$UNSWELL_MIRROR" show -s --format=%cI "$pinned")
+[ "$actual_date" = "$unswell_date" ] ||
+	die "$UNSWELL_PIN says date $unswell_date but $pinned was committed at $actual_date;\nrun: scripts/pin-unswell.sh $pinned"
 
 # ---------------------------------------------------------------------------
 # 2. Materialize. git archive gives a tree with no .git and with mtimes taken
@@ -109,8 +109,8 @@ unswell_date=$(git -C "$submodule" show -s --format=%cI "$pinned")
 
 rm -rf "$srcdir"
 mkdir -p "$srcdir"
-git -C "$submodule" archive --format=tar "$pinned" | tar -x -C "$srcdir"
-echo "build-wasm: materialized $submodule@$(echo "$pinned" | cut -c1-12) -> $srcdir"
+git -C "$UNSWELL_MIRROR" archive --format=tar "$pinned" | tar -x -C "$srcdir"
+echo "build-wasm: materialized unswell@$(echo "$pinned" | cut -c1-12) -> $srcdir"
 
 # An empty upstream-patch/ is the goal state, not an error: every change the
 # browser build needs is meant to end up in Unswell itself. See its README.
@@ -178,9 +178,9 @@ fi
 # ---------------------------------------------------------------------------
 
 # The manifest records the toolchain, and CI re-links to compare, so the two
-# hosts have to agree on the compiler. The submodule's go.mod states the
-# module's MINIMUM Go version, not the one this site is built with, so it is
-# the wrong pin: reading it let a 1.25 runner disagree with a 1.27 desk.
+# hosts have to agree on the compiler. The engine's go.mod states the module's
+# MINIMUM Go version, not the one this site is built with, so it is the wrong
+# pin: reading it let a 1.25 runner disagree with a 1.27 desk.
 # .go-version is the single declaration both read.
 pinned_go=$(tr -d '[:space:]' < "$repo/.go-version")
 go_version=$(go version | awk '{print $3}')
