@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-33-gf3d09fd3aeae",
-  "unswellCommit": "f3d09fd3aeaeb355d6519b9cacb98598f149ef6d",
-  "unswellCommitDate": "2026-09-15T09:01:06+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-37-gbcb2b6a7a382",
+  "unswellCommit": "bcb2b6a7a38290b2e52e58102daf9a6a7115b21c",
+  "unswellCommitDate": "2026-09-15T17:47:13+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-09-15T08:53:43Z",
+  "builtAt": "2026-09-15T16:07:39Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "897d5ea1ceb26c74ad9c92d49f305425308c54878d195681f1fced7e5a6216bf",
-    "bytes": 48255487,
-    "gzipBytes": 21893731
+    "sha256": "004c2ab6ecec8cb94b6ce8f84e4bbf75e05601fcb0d95d64b490841fc855f8f1",
+    "bytes": 48262574,
+    "gzipBytes": 21896025
   },
   "rules": [
     {
@@ -32,7 +32,7 @@
     },
     {
       "id": "filler.empty-transition",
-      "version": "1",
+      "version": "2",
       "group": "scaffolding",
       "severity": "warning",
       "summary": "Check whether these repeated opening transitions add information."
@@ -46,7 +46,7 @@
     },
     {
       "id": "filler.section-announcement",
-      "version": "1",
+      "version": "2",
       "group": "scaffolding",
       "severity": "warning",
       "summary": "Replace repeated section announcements with their subject."
@@ -95,7 +95,7 @@
     },
     {
       "id": "hype.metaphor-cluster",
-      "version": "1",
+      "version": "2",
       "group": "inflation",
       "severity": "warning",
       "summary": "Replace clustered stock metaphors with specific properties."
@@ -242,23 +242,23 @@
     },
     {
       "id": "syntax.not-only-density",
-      "version": "2",
+      "version": "3",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "Repeated paired contrasts make this passage formulaic."
     },
     {
       "id": "syntax.noun-stack",
-      "version": "4",
+      "version": "5",
       "group": "syntax-load",
       "severity": "warning",
       "summary": "Review this common-noun sequence; keep established technical terms."
     },
     {
       "id": "syntax.paired-contrast-density",
-      "version": "1",
+      "version": "2",
       "group": "rhetorical-patterns",
-      "severity": "warning",
+      "severity": "note",
       "summary": "Check whether repeated paired contrasts carry distinct information."
     },
     {
@@ -270,28 +270,28 @@
     },
     {
       "id": "syntax.passive-candidate-density",
-      "version": "1",
+      "version": "2",
       "group": "syntax-load",
       "severity": "warning",
       "summary": "Several sentences contain be-plus-participle candidates; review voice only where the meaning allows it."
     },
     {
       "id": "syntax.rhetorical-question-density",
-      "version": "1",
+      "version": "2",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "Check repeated question-and-short-answer transitions."
     },
     {
       "id": "syntax.triad-density",
-      "version": "1",
+      "version": "2",
       "group": "inflation",
       "severity": "warning",
       "summary": "Check repeated triads of evaluative modifiers against specific properties."
     },
     {
       "id": "syntax.whether-preface-density",
-      "version": "1",
+      "version": "2",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "Reduce repeated whether-you prefaces while preserving alternatives."
