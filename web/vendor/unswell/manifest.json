@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-37-gbcb2b6a7a382",
-  "unswellCommit": "bcb2b6a7a38290b2e52e58102daf9a6a7115b21c",
-  "unswellCommitDate": "2026-09-15T17:47:13+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-39-gfd88e26b7afa",
+  "unswellCommit": "fd88e26b7afa8fd8e7543502d87df24914aeaba8",
+  "unswellCommitDate": "2026-09-16T07:57:08+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-09-15T16:07:39Z",
+  "builtAt": "2026-09-16T05:57:42Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "004c2ab6ecec8cb94b6ce8f84e4bbf75e05601fcb0d95d64b490841fc855f8f1",
-    "bytes": 48262574,
-    "gzipBytes": 21896025
+    "sha256": "780b0c03dfbbbd37e1aa377e4db881db1c9d7f0156effa2da1c16f3e7f8c0e52",
+    "bytes": 48311008,
+    "gzipBytes": 21909386
   },
   "rules": [
     {
@@ -29,6 +29,13 @@
       "group": "scaffolding",
       "severity": "warning",
       "summary": "State the fact without announcing its importance."
+    },
+    {
+      "id": "filler.document-metadiscourse",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "note",
+      "summary": "Document self-description: check whether this announcement or navigation helps the reader."
     },
     {
       "id": "filler.empty-transition",
@@ -274,6 +281,13 @@
       "group": "syntax-load",
       "severity": "warning",
       "summary": "Several sentences contain be-plus-participle candidates; review voice only where the meaning allows it."
+    },
+    {
+      "id": "syntax.repeated-reframing",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "note",
+      "summary": "Repeated denial and redefinition: review whether both clauses add information."
     },
     {
       "id": "syntax.rhetorical-question-density",

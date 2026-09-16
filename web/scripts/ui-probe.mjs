@@ -167,7 +167,7 @@ async function main() {
     detail,
   );
   check(
-    /unswell v\d.*40 rules.*go1\./.test(await evaluate('document.getElementById("footer-tag").textContent')),
+    /unswell v\d.*42 rules.*go1\./.test(await evaluate('document.getElementById("footer-tag").textContent')),
     "the footer states the build that is actually running",
     await evaluate('document.getElementById("footer-tag").textContent'),
   );
@@ -389,6 +389,42 @@ async function main() {
     (await evaluate('document.getElementById("report").hidden')) === false,
     "Cmd/Ctrl + Enter analyzes",
   );
+
+  /* ---------- Every clause of a grouped frame is visible ---------- */
+
+  const frameText = "Café 🙂. Backups are not a checkbox. They are your last line of defense. " +
+    "Monitoring is not a dashboard. It is the foundation of operational confidence.\n\n" +
+    "Testing is not a phase. It is a commitment to quality.";
+  await evaluate(`(() => {
+    document.querySelector('#format-control button[data-value="markdown"]').click();
+    document.getElementById("clear").click();
+    const input = document.getElementById("input");
+    input.value = ${JSON.stringify(frameText)};
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("analyze").click();
+  })()`);
+  await waitForReport(evaluate);
+  const frames = JSON.parse(await evaluate(`(() => {
+    const note = document.querySelector(".note");
+    note.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+    const marks = [...document.querySelectorAll("#report .mark")];
+    return JSON.stringify({
+      rules: [...document.querySelectorAll(".note-rule")].map(n => n.textContent),
+      meta: document.querySelector(".note-meta").textContent,
+      marks: marks.length,
+      active: marks.every(m => m.classList.contains("is-active")),
+      units: new Set(marks.map(m => m.closest(".para").dataset.unit)).size,
+      badges: document.querySelectorAll(".mark-index").length,
+      gate: document.querySelector(".stat-value").textContent,
+    });
+  })()`));
+  check(frames.rules.length === 1 && frames.rules[0] === "syntax.repeated-reframing",
+    "the whole construction produces one grouped note", frames.rules.join(", "));
+  check(frames.marks === 6 && frames.units === 2 && frames.badges === 1,
+    "all six clauses are marked across two paragraphs with one finding number", JSON.stringify(frames));
+  check(frames.active, "hovering the grouped note activates every related clause");
+  check(frames.meta.includes("6 text locations") && frames.gate === "PASS",
+    "the note exposes its evidence locations without forbidding the text", frames.meta);
 
   /* ---------- Renders ---------- */
 
