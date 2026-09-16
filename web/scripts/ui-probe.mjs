@@ -174,8 +174,7 @@ async function main() {
 
   /* ---------- Loading a sample analyzes it ---------- */
 
-  await evaluate('document.getElementById("load-sample").click()');
-  await waitForReport(evaluate);
+  await runAndWaitForReport(evaluate, 'document.getElementById("load-sample").click()');
 
   const report = await evaluate(`JSON.stringify({
     marks: document.querySelectorAll("#report .mark").length,
@@ -311,8 +310,7 @@ async function main() {
 
   /* ---------- The revision is clean ---------- */
 
-  await evaluate('document.getElementById("load-revision").click()');
-  await waitForReport(evaluate);
+  await runAndWaitForReport(evaluate, 'document.getElementById("load-revision").click()');
   const revised = JSON.parse(await evaluate(`JSON.stringify(
     [...document.querySelectorAll(".para-origin")].map(b => b.textContent))`));
   console.log(`      revision origin: ${revised.join(", ") || "none in band"}`);
@@ -347,8 +345,7 @@ async function main() {
     "the legend gains its code line in Python mode",
   );
 
-  await evaluate('document.getElementById("load-sample").click()');
-  await waitForReport(evaluate);
+  await runAndWaitForReport(evaluate, 'document.getElementById("load-sample").click()');
   const python = await evaluate(`JSON.stringify({
     marks: document.querySelectorAll("#report .mark").length,
     dim: document.querySelectorAll("#report .code-dim").length,
@@ -383,8 +380,8 @@ async function main() {
 
   /* ---------- Keyboard ---------- */
 
-  await evaluate(`document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }))`);
-  await waitForReport(evaluate);
+  await runAndWaitForReport(evaluate,
+    `document.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", metaKey: true, bubbles: true }))`);
   check(
     (await evaluate('document.getElementById("report").hidden')) === false,
     "Cmd/Ctrl + Enter analyzes",
@@ -395,7 +392,7 @@ async function main() {
   const frameText = "Café 🙂. Backups are not a checkbox. They are your last line of defense. " +
     "Monitoring is not a dashboard. It is the foundation of operational confidence.\n\n" +
     "Testing is not a phase. It is a commitment to quality.";
-  await evaluate(`(() => {
+  await runAndWaitForReport(evaluate, `(() => {
     document.querySelector('#format-control button[data-value="markdown"]').click();
     document.getElementById("clear").click();
     const input = document.getElementById("input");
@@ -403,7 +400,6 @@ async function main() {
     input.dispatchEvent(new Event("input", { bubbles: true }));
     document.getElementById("analyze").click();
   })()`);
-  await waitForReport(evaluate);
   const frames = JSON.parse(await evaluate(`(() => {
     const note = document.querySelector(".note");
     note.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
@@ -447,8 +443,7 @@ async function main() {
         if (s === "ready" || s === "failed" || Date.now() > deadline) break;
         await sleep(400);
       }
-      await evaluate('document.getElementById("load-sample").click()');
-      await waitForReport(evaluate);
+      await runAndWaitForReport(evaluate, 'document.getElementById("load-sample").click()');
       await sleep(900);
       const metrics = await send("Page.getLayoutMetrics");
       const full = Math.min(Math.ceil(metrics.cssContentSize.height), 6000);
@@ -472,17 +467,28 @@ async function main() {
   process.exit(failed > 0 ? 1 : 0);
 }
 
-/** Waits until a report is on screen, or gives up loudly. */
-async function waitForReport(evaluate) {
+/** Runs an action and waits for its new report, including an asynchronous fetch. */
+async function runAndWaitForReport(evaluate, action) {
+  // A remote sample can still be loading while the previous report is visible.
+  // Keep its DOM identity: even identical results must replace the old root.
+  await evaluate(`(() => {
+    globalThis.__unswellProbePreviousReport = document.getElementById("report").firstElementChild;
+    ${action};
+  })()`);
   const deadline = Date.now() + 60_000;
   for (;;) {
-    const shown = await evaluate('document.getElementById("report").hidden === false');
+    const shown = await evaluate(`(() => {
+      const report = document.getElementById("report");
+      return !report.hidden && report.firstElementChild !== null &&
+        report.firstElementChild !== globalThis.__unswellProbePreviousReport;
+    })()`);
     if (shown) {
       // One more frame, so the rail has been written too.
       await sleep(120);
+      await evaluate("delete globalThis.__unswellProbePreviousReport");
       return;
     }
-    if (Date.now() > deadline) throw new Error("no report appeared within 60 s");
+    if (Date.now() > deadline) throw new Error("no new report appeared within 60 s");
     await sleep(200);
   }
 }
