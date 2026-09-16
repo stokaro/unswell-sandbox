@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-39-gfd88e26b7afa",
-  "unswellCommit": "fd88e26b7afa8fd8e7543502d87df24914aeaba8",
-  "unswellCommitDate": "2026-09-16T07:57:08+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-40-g04a1942e0acf",
+  "unswellCommit": "04a1942e0acf94fc1c973838fab121832454c80b",
+  "unswellCommitDate": "2026-09-16T12:59:21+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-09-16T05:57:42Z",
+  "builtAt": "2026-09-16T11:00:07Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "780b0c03dfbbbd37e1aa377e4db881db1c9d7f0156effa2da1c16f3e7f8c0e52",
-    "bytes": 48311008,
-    "gzipBytes": 21909386
+    "sha256": "db8f125df0abe263adebbe34d6a40d905a5b83488f2cf041d0db1630c5df93fd",
+    "bytes": 48378391,
+    "gzipBytes": 21926841
   },
   "rules": [
     {
@@ -31,6 +31,13 @@
       "summary": "State the fact without announcing its importance."
     },
     {
+      "id": "filler.document-justification",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "State the scope or destination directly instead of explaining why this page exists."
+    },
+    {
       "id": "filler.document-metadiscourse",
       "version": "1",
       "group": "rhetorical-patterns",
@@ -43,6 +50,13 @@
       "group": "scaffolding",
       "severity": "warning",
       "summary": "Check whether these repeated opening transitions add information."
+    },
+    {
+      "id": "filler.evaluative-closure",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "This closing judgment repeats a purpose or calls a result honest; state the consequence directly."
     },
     {
       "id": "filler.modern-world-opening",
@@ -141,6 +155,13 @@
       "group": "readability",
       "severity": "warning",
       "summary": "Consider paragraph boundaries while keeping each condition with the statement it qualifies."
+    },
+    {
+      "id": "repetition.definition-echo",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "The definition repeats its subject before the contrast; explain the distinction directly."
     },
     {
       "id": "repetition.exact-sentence",
@@ -295,6 +316,13 @@
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "Check repeated question-and-short-answer transitions."
+    },
+    {
+      "id": "syntax.slogan-contrast",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "The contrast names abstract actions without their objects; name the check and its failure condition."
     },
     {
       "id": "syntax.triad-density",

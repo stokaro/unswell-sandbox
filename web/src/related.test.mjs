@@ -3,6 +3,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ByteText, renderReport } from "./render.ts";
+import { renderRail } from "./rail.ts";
 
 class Element {
   children = [];
@@ -11,6 +12,7 @@ class Element {
   attributes = {};
   text = "";
   append(...nodes) { this.children.push(...nodes); }
+  replaceChildren(...nodes) { this.children = nodes; }
   setAttribute(name, value) { this.attributes[name] = value; }
   set textContent(value) { this.text = value; this.children = []; }
   get textContent() { return this.text + this.children.map((n) => n.textContent).join(""); }
@@ -60,4 +62,25 @@ test("related evidence is marked across paragraphs with mapped markup gaps and o
   assert.equal(marks.every((mark) => mark.dataset.finding === "group"), true);
   assert.equal(rendered.root.children.filter((node) => node.className === "para").length, 2);
   assert.equal(JSON.stringify(report), original, "the renderer must not mutate the engine report");
+});
+
+test("the notes show engine editing guidance as text without changing the report", (t) => {
+  fixtureDOM(t);
+  const finding = {
+    id: "closure", ruleId: "filler.evaluative-closure", severity: "warning", gate: "none",
+    message: "Review the closing judgment.", suggestion: "Keep <conditions> and remove the repeated purpose.", points: 12,
+  };
+  const report = { findings: [finding], gate: { passed: true }, maxIndex: 12 };
+  const original = JSON.stringify(report);
+  const { notes } = renderRail(new Element(), report);
+  const note = notes.get(finding.id);
+  const advice = note.children.find((node) => node.className === "note-suggestion");
+  assert.equal(advice.textContent, finding.suggestion);
+  assert.equal(advice.children.length, 0, "guidance is not interpreted as HTML");
+  assert.equal(note.attributes["aria-label"].includes(finding.suggestion), true);
+  assert.equal(JSON.stringify(report), original);
+
+  delete finding.suggestion;
+  const plain = renderRail(new Element(), report).notes.get(finding.id);
+  assert.equal(plain.children.some((node) => node.className === "note-suggestion"), false);
 });

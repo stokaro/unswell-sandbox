@@ -58,6 +58,9 @@ website.
 is copied from that same toolchain, because the pair has to match.
 
 `make test` proves the engine and the contract; it never opens a browser.
+Its Ptah casebook also replays 21 source-bound originals and nine proposed
+revisions through both profiles, using the same expectations as the native CLI.
+The notes display the engine's editing guidance when a finding includes it.
 `make ui-probe` is the one that proves the page is wired to them. It loads
 `index.html` and drives it through the controls a visitor uses — the toolbar,
 the samples, the marks, the keyboard — then asserts by reading the DOM. Add

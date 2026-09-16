@@ -129,10 +129,18 @@ function renderNote(finding: Finding, index: number): HTMLElement {
   }
   meta.append(document.createTextNode(` · +${formatScore(finding.points)} pts`));
 
-  note.append(badge, rule, message, meta);
+  note.append(badge, rule, message);
+  if (finding.suggestion) {
+    const suggestion = document.createElement("span");
+    suggestion.className = "note-suggestion";
+    suggestion.textContent = finding.suggestion;
+    note.append(suggestion);
+  }
+  note.append(meta);
   note.setAttribute(
     "aria-label",
-    `Finding ${index + 1} of rule ${finding.ruleId}: ${finding.message}. Show it in the text.`,
+    `Finding ${index + 1} of rule ${finding.ruleId}: ${finding.message}. ` +
+      (finding.suggestion ? `${finding.suggestion} ` : "") + "Show it in the text.",
   );
   return note;
 }
