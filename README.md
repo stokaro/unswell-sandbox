@@ -12,9 +12,9 @@ what it found inline and lists each finding as a note in the margin.
 A linter playground that fakes its output teaches people something false about
 the linter. So this one does not fake anything:
 
-- The rules are Unswell's own rule catalog, from a pinned upstream tag. The
-  extraction, the segmentation, the forty rules, the scoring and the gate are
-  the ones in the release, not a JavaScript imitation of them.
+- The rules are Unswell's own catalog, from a pinned upstream commit. The
+  extraction, segmentation, rules, scoring, and gate run directly from that
+  source in WebAssembly.
 - The gate decision on screen is the gate decision the CLI would return, and
   the `exit 0` / `exit 1` beside it is the status your CI would see.
 - The version in the footer is the version of the WebAssembly that is actually
@@ -373,3 +373,16 @@ if an inline script appears without a matching one.
 MIT. The vendored web fonts carry their own terms; see
 `web/assets/fonts/LICENSES.md`. Unswell itself is a separate repository with
 its own license.
+
+## Construction regressions
+
+`make test-frames` runs the built WASM through the same host API as the page.
+It checks three denial/redefinition pairs with all six clause locations, a pinned
+Ptah page, and technical controls under both profiles. The fixtures record their
+source revision and distinguish constructed probes from real documentation.
+These checks measure recognition, not authorship or editorial precision.
+
+The runtime preserves mapped segments for related evidence. The renderer marks
+all occurrences, including those in later paragraphs, and the rail reports the
+number of text locations. `web/src/related.test.mjs` checks this behavior with a
+small DOM fixture; it does not assert browser layout.

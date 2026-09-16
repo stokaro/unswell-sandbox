@@ -99,29 +99,35 @@ type unitStamp struct {
 // findingStub is one finding as the page marks it: where it is, what it says,
 // and what it cost.
 type findingStub struct {
-	ID          string   `json:"id"`
-	RuleID      string   `json:"ruleId"`
-	RuleVersion string   `json:"ruleVersion"`
-	Severity    string   `json:"severity"`
-	Gate        string   `json:"gate"`
-	Group       string   `json:"group"`
-	Scope       string   `json:"scope"`
-	Message     string   `json:"message"`
-	Suggestion  string   `json:"suggestion,omitempty"`
-	Context     string   `json:"context,omitempty"`
-	Start       int      `json:"start"`
-	End         int      `json:"end"`
-	Line        int      `json:"line"`
-	Column      int      `json:"column"`
-	Segments    []span   `json:"segments"`
-	Related     []span   `json:"related,omitempty"`
-	Metric      *metric  `json:"metric,omitempty"`
-	Points      float64  `json:"points"`
-	Activation  int      `json:"activation"`
-	Fingerprint string   `json:"fingerprint"`
-	Suppressed  bool     `json:"suppressed"`
-	UnitIDs     []int    `json:"unitIds"`
-	Occurrences []string `json:"-"`
+	ID          string        `json:"id"`
+	RuleID      string        `json:"ruleId"`
+	RuleVersion string        `json:"ruleVersion"`
+	Severity    string        `json:"severity"`
+	Gate        string        `json:"gate"`
+	Group       string        `json:"group"`
+	Scope       string        `json:"scope"`
+	Message     string        `json:"message"`
+	Suggestion  string        `json:"suggestion,omitempty"`
+	Context     string        `json:"context,omitempty"`
+	Start       int           `json:"start"`
+	End         int           `json:"end"`
+	Line        int           `json:"line"`
+	Column      int           `json:"column"`
+	Segments    []span        `json:"segments"`
+	Related     []relatedSpan `json:"related,omitempty"`
+	Metric      *metric       `json:"metric,omitempty"`
+	Points      float64       `json:"points"`
+	Activation  int           `json:"activation"`
+	Fingerprint string        `json:"fingerprint"`
+	Suppressed  bool          `json:"suppressed"`
+	UnitIDs     []int         `json:"unitIds"`
+	Occurrences []string      `json:"-"`
+}
+
+type relatedSpan struct {
+	Start    int    `json:"start"`
+	End      int    `json:"end"`
+	Segments []span `json:"segments"`
 }
 
 type span struct {
@@ -280,7 +286,11 @@ func projectFinding(
 		stub.Segments = append(stub.Segments, span{Start: stub.Start, End: stub.End})
 	}
 	for _, related := range finding.Related {
-		stub.Related = append(stub.Related, span{Start: related.Span.Start, End: related.Span.End})
+		location := relatedSpan{Start: related.Span.Start, End: related.Span.End}
+		for _, segment := range related.Segments {
+			location.Segments = append(location.Segments, span{Start: segment.Start, End: segment.End})
+		}
+		stub.Related = append(stub.Related, location)
 	}
 	if len(finding.Evidence.Metrics) > 0 {
 		first := finding.Evidence.Metrics[0]
