@@ -1,0 +1,323 @@
+{
+  "version": 1,
+  "repository": "https://github.com/stokaro/ptah",
+  "commit": "654eae5591392278e6c8bce8e54737f780766f19",
+  "annotation": "assistant-authored development judgments; not independent human labels",
+  "cases": [
+    {
+      "id": "document-existence",
+      "source_path": "docs/site/src/content/docs/operate/kubernetes-operator.md",
+      "source_sha256": "16ae9f6684a00db5efc6f47907060cdb3b0b0341dcf032487d232e4def488653",
+      "start": 608,
+      "end": 961,
+      "sha256": "c9c5006148e293e22ce47b1b446713228b0f7a2a95e869a3fc514db970b6386b",
+      "text": "[Ptah Operator](https://github.com/stokaro/ptah-operator) is a Kubernetes\ncontrol plane that converges a database on a desired schema published as an OCI\nartifact. It is a separate project with its own repository, releases, and\nsupport matrix; this page exists so the operator is reachable from here and so\nits boundary is stated where a reader decides.",
+      "expected": [
+        {
+          "rule": "filler.document-justification",
+          "start": 244,
+          "end": 352,
+          "text": "this page exists so the operator is reachable from here and so\nits boundary is stated where a reader decides"
+        }
+      ],
+      "revision": "[Ptah Operator](https://github.com/stokaro/ptah-operator) is a Kubernetes\ncontrol plane that converges a database on a desired schema published as an OCI\nartifact. It is a separate project with its own repository, releases, and\nsupport matrix.",
+      "rationale": "Keep the separate project, releases, support matrix, and destination. The existence of this page adds no deployment instruction."
+    },
+    {
+      "id": "deliberate-non-repetition",
+      "source_path": "docs/site/src/content/docs/operate/kubernetes-operator.md",
+      "source_sha256": "16ae9f6684a00db5efc6f47907060cdb3b0b0341dcf032487d232e4def488653",
+      "start": 3278,
+      "end": 3642,
+      "sha256": "99cab9cb6c94aa757a6248f19ad28932f27d166a4cc4e7d36e8105f97e4fcfcb",
+      "text": "The operator's guide is a site of its own, with its own versions:\n[operator.ptah.run](https://operator.ptah.run/). Installation, the chart values,\nthe approval model, operations, the security model and the support windows all\nlive there, and this page deliberately does not restate any of them -- a second\ncopy of an install command is a second thing to get wrong.",
+      "expected": [
+        {
+          "rule": "filler.document-justification",
+          "start": 242,
+          "end": 293,
+          "text": "this page deliberately does not restate any of them"
+        }
+      ],
+      "revision": "The operator's guide is a site of its own, with its own versions:\n[operator.ptah.run](https://operator.ptah.run/). Installation, the chart values,\nthe approval model, operations, the security model and the support windows all\nlive there.",
+      "rationale": "Retain the destination and document ownership. The intention not to repeat it is an editorial aside."
+    },
+    {
+      "id": "purpose-echo",
+      "source_path": "docs/site/src/content/docs/databases/postgresql.md",
+      "source_sha256": "0c75ecbfdba8c8b8d472dcfd0f0e9c7b5da82ca07382e496887815a3e7d66f90",
+      "start": 10731,
+      "end": 11424,
+      "sha256": "db6257497951529fbb97dd4000967d21da0878682b09ac3363519195350b1913",
+      "text": "A scoped description is also a replayable one, which is the point of scoping it\nat all. Feed `ptah-compat schema inspect` output straight back in against a\nclean sibling database on the same server and it materializes at exit 0, and\nthe document that comes back is the one that went in. The roles a scoped\ndescription names are precisely the roles the server already has — they hold\nprivileges on the inspected tables — so the dev database is not given them\nagain; they are left exactly as the server has them, never altered, and named\non standard error. A role the server does **not** have is still created there,\nso the same document also materializes on a server that has never seen it.",
+      "expected": [
+        {
+          "rule": "filler.evaluative-closure",
+          "start": 47,
+          "end": 86,
+          "text": "which is the point of scoping it\nat all"
+        }
+      ],
+      "revision": "A scoped description is also a replayable one. Feed `ptah-compat schema inspect` output straight back in against a\nclean sibling database on the same server and it materializes at exit 0, and\nthe document that comes back is the one that went in. The roles a scoped\ndescription names are precisely the roles the server already has — they hold\nprivileges on the inspected tables — so the dev database is not given them\nagain; they are left exactly as the server has them, never altered, and named\non standard error. A role the server does **not** have is still created there,\nso the same document also materializes on a server that has never seen it.",
+      "rationale": "The tail refers back to scoping without adding a condition. State the available replay operation; retain role scope and privilege details."
+    },
+    {
+      "id": "digest-purpose-echo",
+      "source_path": "docs/site/src/content/docs/inference/guides/run-in-kubernetes.md",
+      "source_sha256": "e33b3ea7e0242b304a3cb910e3d77b01bd6af7b939a5ca90ef80b8a8ad69dbfc",
+      "start": 5918,
+      "end": 6229,
+      "sha256": "3bfd8af01a7b18bdcdaf11da3cc6b84028541a75aaa2e181522ee94f255fa756",
+      "text": "A pipeline that read the digest and passed it to the same run has approved\nnothing. The shape is: read it, have somebody approve it, put it in the manifest,\napply the manifest. Any change to the evidence produces a different plan, and the\napproval stops applying — which is what binding it to a digest is for.",
+      "expected": [
+        {
+          "rule": "filler.evaluative-closure",
+          "start": 267,
+          "end": 310,
+          "text": "which is what binding it to a digest is for"
+        }
+      ],
+      "revision": "A pipeline that read the digest and passed it to the same run has approved\nnothing. The shape is: read it, have somebody approve it, put it in the manifest,\napply the manifest. Any change to the evidence produces a different plan, and the\napproval stops applying.",
+      "rationale": "Keep approval invalidation when evidence changes and the preceding read/approve/apply steps. The tail restates the purpose of that binding."
+    },
+    {
+      "id": "honest-rollback",
+      "source_path": "docs/site/src/content/docs/inference/guides/rollback-and-retire.md",
+      "source_sha256": "790df151759ed82cad9416258f82605d23ecf2f2216be6196674309c56574293",
+      "start": 2831,
+      "end": 2950,
+      "sha256": "5db0534b387033f42ce198990c263ee1d12ff162f272a4edf2fac67a4b8ae77b",
+      "text": "That is the honest answer rather than a gap. Going back to it would be going\nback to something that is not what it was.",
+      "expected": [
+        {
+          "rule": "filler.evaluative-closure",
+          "start": 0,
+          "end": 43,
+          "text": "That is the honest answer rather than a gap"
+        }
+      ],
+      "revision": "Rollback would restore a generation that no longer matches the source.",
+      "rationale": "Describe the actual prerequisite instead of judging the refusal honest. The preceding example establishes drift as the cause."
+    },
+    {
+      "id": "honest-verification",
+      "source_path": "docs/site/src/content/docs/inference/concepts/verification-and-cutover.md",
+      "source_sha256": "68e73401ebe518846d4648174cc3d60b8d2e196f86c8f94ab6e6645f76984bdb",
+      "start": 7184,
+      "end": 7484,
+      "sha256": "d52ad265751cd268f129a1f7a0caa1e6fca57c4dcd1b3933614ad1ac851b231a",
+      "text": "`rollback` measures the previous generation before it moves anything: is it\npresent, is it still being maintained, how many rows are stale or missing, is its\nindex valid, and was the cutover recent enough for the window. A generation that\ndrifted is refused — which is the honest answer, not a gap.",
+      "expected": [
+        {
+          "rule": "filler.evaluative-closure",
+          "start": 262,
+          "end": 299,
+          "text": "which is the honest answer, not a gap"
+        }
+      ],
+      "revision": "`rollback` measures the previous generation before it moves anything: is it\npresent, is it still being maintained, how many rows are stale or missing, is its\nindex valid, and was the cutover recent enough for the window. A generation that\ndrifted is refused.",
+      "rationale": "Keep every check before pointer movement and the refusal on drift. The closing praise adds no condition or recovery step."
+    },
+    {
+      "id": "honest-troubleshooting",
+      "source_path": "docs/site/src/content/docs/inference/troubleshooting.md",
+      "source_sha256": "bac5477c165d1aef0d9882efe01f006e87b4a69c9498bdea7c0b412df095239c",
+      "start": 9287,
+      "end": 9459,
+      "sha256": "a92b79bf74e38d89cff27402bbb3a0d8d392cd11b318aebe0fdf092434c69332",
+      "text": "**Fix.** There is no way to roll back to a drifted generation, and that is the\nhonest answer. Catch it up first if it is close enough to be worth it; otherwise\nfix forward.",
+      "expected": [
+        {
+          "rule": "filler.evaluative-closure",
+          "start": 67,
+          "end": 92,
+          "text": "that is the\nhonest answer"
+        }
+      ],
+      "revision": "**Fix.** There is no way to roll back to a drifted generation. Catch it up first if it is close enough to be worth it; otherwise\nfix forward.",
+      "rationale": "Keep the refusal and catch-up/fix-forward alternatives. The evaluative ending does not describe either alternative."
+    },
+    {
+      "id": "definition-echo",
+      "source_path": "docs/site/src/content/docs/atlas/migrate-commands.md",
+      "source_sha256": "330fb59a5fe90f3659d64d53cff20c403bdfe5fb29325c53c7a6f4d67905ed1a",
+      "start": 4954,
+      "end": 5227,
+      "sha256": "5bacf4643b11d3c65820c86fc331f3a21a1c867935ba11e7f09fe8d24afb11ed",
+      "text": "The default is a default, not a fallback. Every layer that names a directory\noutranks it — `--dir`, `PTAH_DIR`, `PTAH_MIGRATIONS_DIR`, and `atlas.hcl`\n`migration.dir` — and a `--dir` naming a directory that is not there fails\nrather than quietly reading `./migrations`:",
+      "expected": [
+        {
+          "rule": "repetition.definition-echo",
+          "start": 0,
+          "end": 40,
+          "text": "The default is a default, not a fallback"
+        }
+      ],
+      "revision": "An invalid explicit directory fails; the default applies only when no layer specifies a directory. Every layer that names a directory\noutranks it — `--dir`, `PTAH_DIR`, `PTAH_MIGRATIONS_DIR`, and `atlas.hcl`\n`migration.dir` — and a `--dir` naming a directory that is not there fails\nrather than quietly reading `./migrations`:",
+      "rationale": "Keep the useful default-versus-fallback distinction by stating its behavior. Preserve every layer of precedence in the following sentence."
+    },
+    {
+      "id": "bare-check-trust",
+      "source_path": "docs/site/src/content/docs/databases/postgresql.md",
+      "source_sha256": "0c75ecbfdba8c8b8d472dcfd0f0e9c7b5da82ca07382e496887815a3e7d66f90",
+      "start": 30810,
+      "end": 31009,
+      "sha256": "17b8508cb59d171876809cd7d752760eb2ead92f13c9faeb91e86dd4de236f4d",
+      "text": "So Ptah checks, rather than trusts. After taking the lock it asks a second\nconnection for the same one; if that succeeds, the lock excludes nothing and the\ncommand refuses before it changes anything:",
+      "expected": [
+        {
+          "rule": "syntax.slogan-contrast",
+          "start": 0,
+          "end": 34,
+          "text": "So Ptah checks, rather than trusts"
+        }
+      ],
+      "revision": "After taking the lock, Ptah asks a second\nconnection for the same one; if that succeeds, the lock excludes nothing and the\ncommand refuses before it changes anything:",
+      "rationale": "Replace the slogan with the lock property. Keep the second-connection test and refusal before mutation."
+    },
+    {
+      "id": "actual-exit-alternative",
+      "source_path": "docs/site/src/content/docs/operate/kubernetes-operator.md",
+      "source_sha256": "16ae9f6684a00db5efc6f47907060cdb3b0b0341dcf032487d232e4def488653",
+      "start": 986,
+      "end": 1255,
+      "sha256": "b603885768fda332cac2ed95bcd298618fc264bdaf8264f4eb48570b42198847",
+      "text": "`PtahSchema` names an OCI artifact and a target database. The controller\nresolves the tag to a digest once, verifies the artifact, observes the\ndatabase, publishes a plan, applies the approved plan, and then observes again\nrather than trusting the apply process's exit.",
+      "expected": [],
+      "revision": "",
+      "rationale": "The alternative names a concrete success signal; deleting it would hide the extra observation step."
+    },
+    {
+      "id": "actual-lease-alternative",
+      "source_path": "docs/site/src/content/docs/inference/guides/run-in-kubernetes.md",
+      "source_sha256": "e33b3ea7e0242b304a3cb910e3d77b01bd6af7b939a5ca90ef80b8a8ad69dbfc",
+      "start": 3539,
+      "end": 3752,
+      "sha256": "34cec67eea5716edf8b32720b4615ed4e061a8c00ea1afa9686d4e4239dcbe25",
+      "text": "Keep `parallelism: 1`. Two coordinators cannot corrupt one run — the store checks\na fencing token inside the write rather than trusting a lease it read — but a\nsecond pod would spend the provider budget twice.",
+      "expected": [],
+      "revision": "",
+      "rationale": "The rejected alternative names a specific concurrency guarantee."
+    },
+    {
+      "id": "byte-order-alternative",
+      "source_path": "docs/site/src/content/docs/atlas/migrate-commands.md",
+      "source_sha256": "330fb59a5fe90f3659d64d53cff20c403bdfe5fb29325c53c7a6f4d67905ed1a",
+      "start": 38417,
+      "end": 38908,
+      "sha256": "ce359de5d41e8beb58aa0735215eca31216aaf812988410688666fd405b086d0",
+      "text": "`migrate set` answers a different question from status and linearity: whether a\nretired row lies above the selected target in Flyway's numeric component order.\nIt therefore keeps retired `V9` history when setting `V10`, but removes retired\n`V2` history when setting `V1`. When two source tokens need missing file-role or\nwalk-position context to break a tie, such as `01` versus `1` or `x` versus\n`y`, Ptah refuses before changing revision metadata instead of guessing from\ntheir byte order.",
+      "expected": [],
+      "revision": "",
+      "rationale": "The alternative names the prohibited inference and missing context."
+    },
+    {
+      "id": "actual-default-alternative",
+      "source_path": "docs/site/src/content/docs/databases/mysql.md",
+      "source_sha256": "d1b182415b5f020d6346927562af18f331e6de28c97383fbe83dc2f04dd368a3",
+      "start": 929,
+      "end": 13339,
+      "sha256": "c486f18beffaefcc0686029ded233c75890a6f2f8e8822a08a2af43e4a1ef835",
+      "text": "- Enums are inline `ENUM` column types, not standalone type objects.\n- MariaDB guards constraint and index drops with `IF EXISTS`; MySQL rejects\n  that guard, so the `mysql` renderer strips it.\n- The `DROP CHECK` spelling exists only on MySQL 8.0.16+; MariaDB uses the\n  generic `DROP CONSTRAINT` clause.\n- Portable foreign keys require InnoDB tables and compatible column types,\n  signedness, character sets, and collations. MariaDB generated FK columns and\n  MySQL virtual generated FK columns fail before rendering. MySQL stored\n  generated columns reject referential actions the engine cannot apply. When\n  an FK-participating table has no declared engine, Ptah emits\n  `ENGINE=InnoDB` explicitly instead of trusting the session default.\n- `SET NULL` requires nullable local columns. Explicit foreign-key names are\n  limited to 64 characters; generated names are shortened deterministically.\n- A nonunique referenced key must be a complete leftmost BTREE prefix.\n  FULLTEXT, SPATIAL, HASH, parser-backed, expression, and prefix indexes do not\n  qualify.\n- A modified `SQL SECURITY DEFINER` routine is refused before migration SQL is\n  planned when its catalog `DEFINER` differs from the connected\n  `CURRENT_USER()`. Connect as that definer, change the desired routine to\n  `SQL SECURITY INVOKER`, or leave the foreign routine unchanged. Missing\n  ownership facts fail closed too.\n- An index declaring `SPATIAL` or `FULLTEXT` is compared against the access\n  method the server reports, so a plain index of the same name over the same\n  column is a difference rather than a match. An index declaring **no** type\n  accepts whatever the engine chose, and the asymmetry is the engines': `CREATE\n  INDEX` over a `POINT` column leaves `INDEX_TYPE=BTREE` on MariaDB 11.8 and\n  `SPATIAL` on MySQL 8.4, so comparing an undeclared type would plan a rebuild\n  on MySQL that MySQL immediately undoes.\n- `USING BTREE` and `USING HASH` are read on a `KEY`, `INDEX` or `UNIQUE KEY`\n  and rendered back after the column list. A `UNIQUE KEY` asking for a method\n  is read as a unique index, which is what the server builds and where a method\n  has somewhere to live. `BTREE` is not carried: `INDEX_TYPE` reports it for a\n  declared `USING BTREE` and for an index that asked for nothing alike, so the\n  two are one index to every reader Ptah has, and emitting it would put the\n  clause into the DDL of every index read back from a server. `HASH` is\n  carried, and whether the server honors it belongs to the storage engine\n  rather than to the dialect: on InnoDB, MySQL 8.4 records `BTREE` and drops\n  the clause from `SHOW CREATE TABLE` while MariaDB 11.8 records `HASH` and\n  prints it back, and on `MEMORY` both record `HASH`. MariaDB records it on\n  every engine that takes an index -- `InnoDB`, `MEMORY`, `MyISAM` and `Aria`\n  all report `HASH`, and `ARCHIVE` refuses an index at all -- so there a desired\n  `HASH` against a server reporting otherwise is a real difference and is\n  reported. MySQL records it only on `MEMORY`, so the comparison stays quiet\n  there for the same reason the undeclared type above is not compared: on the\n  default engine a desired `HASH` reads back as `BTREE`, and reporting it would\n  plan a rebuild MySQL immediately undoes. Deciding the MySQL case properly\n  needs the table's storage engine, which the index comparison does not have.\n- Two constraints on one table may share a name, and both engines accept\n  `CONSTRAINT same UNIQUE (a)` beside `CONSTRAINT same FOREIGN KEY (a)`. Ptah\n  identifies a named constraint by its type as well as its table and name, so\n  both survive the read, the desired model, and the comparison. MySQL also lets\n  a `CHECK` share a name with a `UNIQUE`, where MariaDB answers `ERROR 1826`.\n- A key part's direction is read back from the catalog, so `KEY (a DESC)` and\n  `KEY (a)` are told apart rather than both arriving ascending. It also decides\n  which index a foreign key owns: MySQL will not back one with a descending\n  leading part and builds its own index instead, while MariaDB reuses whatever\n  covers the columns. So a same-named index beside a covering one is the\n  author's on MariaDB and the engine's on MySQL, and only the first is planned\n  for removal.\n- A key part may be an expression on MySQL -- `KEY ((a + 1))`, a functional key\n  part -- and an unnamed one takes the name the server gives it,\n  `functional_index`, then `functional_index_2` and `functional_index_3`. Two\n  refusals go with it, and they are different facts rather than one rule:\n  MariaDB has no functional key parts at all and answers `ERROR 1064` to every\n  spelling, so the dialect decides; MySQL accepts them in an index and refuses\n  one in a `PRIMARY KEY` with `ERROR 3756`, so that refusal holds on both\n  engines. A functional part in a table-body `UNIQUE KEY` is read as a unique\n  index rather than as a constraint, which is what the server builds: MySQL\n  reports one index with `NON_UNIQUE=0`, a null column and the expression, and\n  a constraint has nowhere to keep an expression.\n- An inline `KEY`, `INDEX` or `UNIQUE KEY` the author did not name is read with\n  the name its server would assign: the first key part's column, then `_2`,\n  `_3` for a name already taken. A prefix length and a `DESC` direction stay\n  out of the name, and a column-level `UNIQUE` claims its column before any\n  index does. The name is decided when the SQL is read rather than when it is\n  written, because the catalog reports what the server chose and a desired\n  schema that guessed differently would never converge with it.\n- A non-ASCII index name is refused, rather than compared. The two engines fold\n  such names differently and not in a way one rule covers: measured on MySQL\n  8.4.11 and MariaDB 11.8.9 over a `utf8mb4` connection, `I` beside dotless\n  `ı` and `Σ` beside final `ς` are accepted by MySQL and answer `ERROR 1061` on\n  MariaDB, while dotted `İ` beside `i` and the Kelvin sign beside `K` do the\n  opposite. A lone `prımary` is accepted by MySQL and answers `ERROR 1280` on\n  MariaDB, which is why a solitary non-ASCII name is not a safe exception\n  either -- it is still an unresolved comparison against the reserved\n  `PRIMARY`. ASCII folding is shared and deterministic and is unchanged; a name\n  derived from a non-ASCII column is refused for the same reason an explicit\n  one is.\n- Migration planning refuses a plan whose index names may collide, rather than\n  emitting one the server rejects halfway. A name carrying a non-ASCII rune has\n  an equivalence class Ptah cannot compute offline, so it is treated as a\n  possible conflict with every other index name on that table, ASCII ones\n  included -- `İ` collides with plain `i` on MySQL, so grouping only the\n  non-ASCII names together would still miss it. Measured, the alternative was a\n  half-applied migration: rendering `CREATE INDEX İ` and `CREATE INDEX i`\n  against MySQL 8.4.11 creates the first and answers `ERROR 1061` on the\n  second.\n- **A comparison that reaches the target asks it instead of guessing.** The\n  conservative rule above is what an offline run still does, and it was the\n  only answer until the names could be resolved against the server: `a` beside\n  `ä` is accepted by both engines and was reported as a possible conflict for\n  want of anything better. A comparison holding a connection now asks, and gets\n  the engine's own answer for each pair.\n  What is asked is the collision rather than a fold to imitate, because neither\n  engine exposes the fold its identifier comparison uses -- measured, none of\n  `LOWER()`, `utf8mb4_general_ci`, `utf8mb4_unicode_ci`, `utf8mb4_uca1400_ai_ci`\n  or `utf8mb4_bin` reproduces MariaDB's. A temporary table carrying the names as\n  keys either creates or answers `ERROR 1061`, which is exactly the question,\n  and a temporary table is this session's alone and gives the per-table\n  namespace an index name actually lives in.\n  Only names Ptah cannot fold are asked about, so a schema whose index names are\n  all ASCII reaches no server and pays nothing. Sixty-four keys is the per-table\n  ceiling on both engines, so a larger set is asked in several statements, each\n  carrying every non-ASCII name so no pairing is missed. A refusal that is not\n  the duplicate-name answer -- a lost connection, or an account without\n  `CREATE TEMPORARY TABLES`, which answers `ERROR 1044` -- is reported rather\n  than read as an equivalence.\n- Column names are compared ASCII-case-insensitively, and a non-ASCII one is\n  treated as a possible conflict with every column in its table. Both engines\n  fold ASCII case: a table declaring `A` and `a` answers `ERROR 1060`, and a\n  foreign key written `a` binds to a column declared `A` and reuses its key --\n  so modeling these names as exact reported drift on every run and missed a\n  duplicate the server refuses. Beyond ASCII the two disagree, and the same\n  fold decides both questions: MySQL calls `İ`/`i` and the Kelvin sign/`K` one\n  column and MariaDB calls `I`/`ı` and `σ`/`ς` one column, each engine\n  accepting a foreign key written with either spelling of a pair it folds and\n  reporting a missing key column for a pair it does not. The ASCII half of a\n  pair is why the conflict is table-wide rather than per name: `İ` collides\n  with plain `i` on MySQL.\n- A non-ASCII column named by a key, a constraint, or its own `UNIQUE` is\n  refused for the same reason, and the disagreement runs deeper there. Asked\n  whether two columns differing only by the pair are one name, MySQL folds\n  dotted `İ`/`i` and the Kelvin sign/`K` while MariaDB folds `I`/`ı` and\n  `σ`/`ς` -- and MariaDB folds the Kelvin pair for that question while treating\n  the two as different columns when it resolves a foreign key, so the rule is\n  not one per engine either. A column nothing keys takes part in no comparison\n  and is kept.\n- Two indexes on one table claiming one name are refused. Both engines answer\n  `ERROR 1061 Duplicate key name`, so accepting it would describe a table\n  neither can create. `KEY (a), KEY a (b)` is that shape: the unnamed index\n  takes `a` as soon as it is read, and the later explicit `a` collides with it.\n- A table body declares a spatial or full-text index as\n  `{SPATIAL|FULLTEXT} [INDEX|KEY] [name] (columns)`, and every optional part of\n  that is optional here too — `FULLTEXT (bio)` is as readable as\n  `FULLTEXT INDEX ft_bio (bio)`. The `WITH PARSER <name>` clause travels with\n  it. `KEY` matters as much as `INDEX`: both dump tools normalize to it, so a\n  table written with `FULLTEXT INDEX` comes back out of `mysqldump` as\n  `FULLTEXT KEY`. An index left unnamed takes the name its server would give\n  it, by the rule above.\n- `KEY`, `SPATIAL`, `FULLTEXT` and `INDEX` open a table-level index here, and\n  both engines reserve all four, so no column carries those names bare. Ptah\n  reads the word as an index on this family and in dialect-neutral documents,\n  which have no family to ask. A `.sql` source read for another dialect gets a\n  column wherever that engine has no table element opening with the word.\n  `key`, `spatial` and `fulltext` are columns on PostgreSQL, YugabyteDB,\n  CockroachDB, Spanner, ClickHouse, SQLite and Oracle. SQL Server reserves\n  `key`, so only `spatial` and `fulltext` are columns there. `index` is a\n  column on PostgreSQL, YugabyteDB and Spanner, and on CockroachDB unless a\n  column list follows it, directly or after a name. SQL Server reads `index` as\n  its own inline index and ClickHouse as a data-skipping index, and SQLite and\n  Oracle reserve it. Read as an index on the other dialects, `key text` would be\n  refused, and `spatial nvarchar(32)` would become an index named after its\n  type with the column lost (stokaro/ptah#3089, stokaro/ptah#3299).\n- A column carrying both a primary key and a `UNIQUE` is written back the way\n  it was read, because the two spellings do not mean the same thing.\n  `a INT UNIQUE, PRIMARY KEY (a)` builds the primary key and a secondary unique\n  index named `a` on both engines, and it is rendered as the table-level key it\n  was; `a INT PRIMARY KEY UNIQUE` builds both on MySQL and the primary key\n  alone on MariaDB, and it is rendered inline so each engine gives its own\n  answer. Folding the first into the second would lose MariaDB's second index.\n- DDL commits implicitly on both engines, so a failed migration cannot be\n  rolled back by the surrounding transaction.",
+      "expected": [],
+      "revision": "",
+      "rationale": "Explicit engine selection differs materially from the session default."
+    },
+    {
+      "id": "new-purpose-object",
+      "source_path": "docs/site/src/content/docs/databases/sqlserver.md",
+      "source_sha256": "1ee2511add77859f3896ccad523b1d6fa1b2bc2ac50eb59534541ee5bdc0c969",
+      "start": 10478,
+      "end": 10764,
+      "sha256": "19ccc4ca42643630b6a8ad720bf047415aaab298323bbe3bcefb8d5c0a56e2aa",
+      "text": "The guarded form is not a style choice. SQL Server has no\n`CREATE SCHEMA IF NOT EXISTS`, repeating the statement answers `Msg 2714: There\nis already an object named 'app' in the database`, and `CREATE SCHEMA` must be\nthe first statement of its batch — which is what the `EXEC` is for.",
+      "expected": [],
+      "revision": "",
+      "rationale": "The clause connects a named wrapper to a batch constraint; it is not an anaphoric gerund tail."
+    },
+    {
+      "id": "privacy-reason",
+      "source_path": "docs/site/src/content/docs/databases/postgresql.md",
+      "source_sha256": "0c75ecbfdba8c8b8d472dcfd0f0e9c7b5da82ca07382e496887815a3e7d66f90",
+      "start": 10567,
+      "end": 10729,
+      "sha256": "97ac1dbcc7b995464c7e791b37e587980ce40a6fb65e82038ba827cd757c2df3",
+      "text": "The note reports a count and never the names: on a shared instance those names\nbelong to other tenants, which is half the reason the description is scoped at\nall.",
+      "expected": [],
+      "revision": "",
+      "rationale": "The explanation introduces tenant privacy; retain it."
+    },
+    {
+      "id": "absent-state",
+      "source_path": "docs/site/src/content/docs/reference/atlas-commands.md",
+      "source_sha256": "ac8da0d6f9e2402725abe0179d0a2260ab437d578d42b3638bbc7b9de88b7d5c",
+      "start": 14109,
+      "end": 14387,
+      "sha256": "5a72cd70e6131c49ec55eca3444144591d1a8aa5bed476edc135be85b9ca86fa",
+      "text": "In `--format '{{ json . }}'` output, an exact empty current or target identity\nis emitted as an explicit empty `Current` or `Target` member. Pending and\napplied file records likewise keep an explicit empty `Version`. A genuinely\nabsent current or target state omits that member.",
+      "expected": [],
+      "revision": "",
+      "rationale": "Presence determines whether a member is emitted; this is not praise."
+    },
+    {
+      "id": "writes-stopped",
+      "source_path": "docs/site/src/content/docs/inference/concepts/consistency.md",
+      "source_sha256": "12c4b48f08905a9cef829a1d7965ccde107ad2a407b37e040f16740dfe030624",
+      "start": 5699,
+      "end": 6051,
+      "sha256": "ec20d5cf543484e1eb23178deccbecf40d57cf55df5c34d9b22caf9786b9f708",
+      "text": "[Choose a consistency mode](../../strategies/choose-a-consistency-mode/) is the\ndecision page. The short version: `outbox` unless you have a specific reason,\n`immutable` when writes are genuinely stopped; `dual_write` is not selectable in this build, and when it returns it is only for a source you own the\nwriter and the trigger cost is unacceptable.\n",
+      "expected": [],
+      "revision": "",
+      "rationale": "Whether writes stopped is a real immutability condition."
+    },
+    {
+      "id": "honest-mistakes",
+      "source_path": "docs/site/src/content/docs/atlas/schema-commands.mdx",
+      "source_sha256": "ecc504e92e99b6c5f2354a225774c1fc345968658bc965fbc47dd2d25386facf",
+      "start": 77490,
+      "end": 77979,
+      "sha256": "dd0f9bafafa0ca9db457c4b0e174544dd5d46e7137f13ff0dada6f91cf34dedd",
+      "text": "**That list is best-effort and not exhaustive, and the replay is not a\nsandbox.** SQL dialects offer many ways to address something other than the\nconnected database — server-side language extensions, foreign-data wrappers,\nstorage-engine options, loadable modules, and engine-specific pragmas and\nfunctions — and new ones arrive with new engine versions. Treat the deny-list\nas a tripwire for honest mistakes and known tricks, not as a security\nboundary against a hostile plan author.",
+      "expected": [],
+      "revision": "",
+      "rationale": "The threat-model distinction concerns accidental and hostile input, not a moral evaluation of a result."
+    },
+    {
+      "id": "explicit-uncertainty",
+      "source_path": "docs/site/src/content/docs/atlas/feature-matrix.md",
+      "source_sha256": "cbfeddcbb8ea083b016fc6c2343799dc0e9c7727e0330863371f1eca1ae635ba",
+      "start": 55689,
+      "end": 56134,
+      "sha256": "9580f7190e582b71b1a97bf8cf97ed40e7b9e39557bede4d4f9917454809ea65",
+      "text": "The Atlas columns are narrower on purpose. Ptah is a clean-room implementation\nthat studies observable behavior only, so the Atlas CE column is derived from\nthe command, usage, and flag inventory the conformance harness reads out of the\npinned Atlas community binary, and the Pro/Cloud column from the classification\nAtlas publishes on its feature availability page. Where neither source settles\na question, the row says so rather than guessing.",
+      "expected": [],
+      "revision": "",
+      "rationale": "Unsettled questions and unknown outcomes are explicitly distinguished."
+    },
+    {
+      "id": "mechanism-distinction",
+      "source_path": "docs/site/src/content/docs/inference/guides/run-in-kubernetes.md",
+      "source_sha256": "e33b3ea7e0242b304a3cb910e3d77b01bd6af7b939a5ca90ef80b8a8ad69dbfc",
+      "start": 6231,
+      "end": 6522,
+      "sha256": "7b66977c759ad497373f5357c4568695ef682be6c8f928543c1f881a79107e38",
+      "text": "`--stabilize-for` is a promise rather than a mechanism. Keeping the previous\ngeneration a way back means catching it up on a schedule, which is the CronJob\nbeside the cutover Job in the example. Stop it and the window elapses over a\ngeneration that drifted; `rollback` refuses it, correctly.",
+      "expected": [],
+      "revision": "",
+      "rationale": "A time window does not schedule catch-up; the paragraph explains that concrete limitation."
+    },
+    {
+      "id": "guessing-conditions",
+      "source_path": "docs/site/src/content/docs/reference/configuration.mdx",
+      "source_sha256": "4cd866dbfa09228d3b18002efa72dfecf52aab171e589fd46c4cc9eb0e41333a",
+      "start": 14927,
+      "end": 15215,
+      "sha256": "9c530ee67c86bd61f59e373f8752e9bd5a81d0320be72bec5f6d564e312dd148",
+      "text": "If a command needs project values from a config file with multiple\nenvironments, pass `--env`. Commands whose required inputs are all explicit do\nnot need to select an environment. Ptah fails instead of guessing only when\nproject values are required and the environment remains ambiguous.",
+      "expected": [],
+      "revision": "",
+      "rationale": "The failure is conditioned on required project values and an ambiguous environment."
+    }
+  ]
+}

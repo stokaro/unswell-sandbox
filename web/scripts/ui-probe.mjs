@@ -10,7 +10,7 @@
 // It needs `make serve` in another shell, and Chrome on the PATH or in $CHROME.
 
 import { spawn } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import http from "node:http";
 import { join } from "node:path";
 
@@ -166,8 +166,12 @@ async function main() {
     "the engine strip reports a measured boot time",
     detail,
   );
+  const manifestResponse = await fetch(new URL("vendor/unswell/manifest.json", base));
+  if (!manifestResponse.ok) throw new Error(`manifest: HTTP ${manifestResponse.status}`);
+  const manifest = await manifestResponse.json();
+  const expectedFooter = `unswell ${manifest.unswellVersion} · ${manifest.rules.length} rules · ${manifest.goVersion} · MIT · offline`;
   check(
-    /unswell v\d.*42 rules.*go1\./.test(await evaluate('document.getElementById("footer-tag").textContent')),
+    (await evaluate('document.getElementById("footer-tag").textContent')) === expectedFooter,
     "the footer states the build that is actually running",
     await evaluate('document.getElementById("footer-tag").textContent'),
   );
@@ -421,6 +425,43 @@ async function main() {
   check(frames.active, "hovering the grouped note activates every related clause");
   check(frames.meta.includes("6 text locations") && frames.gate === "PASS",
     "the note exposes its evidence locations without forbidding the text", frames.meta);
+
+  /* ---------- Real Ptah wording and its reviewed revision ---------- */
+
+  const casebook = JSON.parse(readFileSync(new URL("../../test/fixtures/ptah-rhetoric.json", import.meta.url), "utf8"));
+  const ptah = casebook.cases.find((row) => row.id === "purpose-echo");
+  const paste = (text) => `(() => {
+    document.getElementById("clear").click();
+    const input = document.getElementById("input");
+    input.value = ${JSON.stringify(text)};
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("analyze").click();
+  })()`;
+  await runAndWaitForReport(evaluate, paste(ptah.text));
+  const rhetoric = JSON.parse(await evaluate(`(() => {
+    const note = [...document.querySelectorAll(".note")].find(
+      n => n.querySelector(".note-rule").textContent === "filler.evaluative-closure");
+    if (!note) return JSON.stringify({ found: false });
+    note.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+    const marks = [...document.querySelectorAll("#report .mark")].filter(m => m.dataset.finding === note.dataset.finding);
+    return JSON.stringify({ found: true,
+      suggestion: note.querySelector(".note-suggestion")?.textContent,
+      text: marks.map(m => m.textContent).join(""),
+      active: marks.length > 0 && marks.every(m => m.classList.contains("is-active")),
+      meta: note.querySelector(".note-meta").textContent,
+      aligned: note.querySelector(".note-meta").getBoundingClientRect().left >=
+        note.querySelector(".note-message").getBoundingClientRect().left,
+    });
+  })()`));
+  check(rhetoric.found && rhetoric.text.includes(ptah.expected[0].text),
+    "the Ptah purpose restatement is marked as a complete clause", rhetoric.text);
+  check(rhetoric.suggestion?.includes("Keep the preceding behavior") && rhetoric.meta.includes("+12 pts"),
+    "the Ptah finding shows editing guidance and its real contribution", rhetoric.suggestion);
+  check(rhetoric.active, "the Ptah note activates its source mark");
+  check(rhetoric.aligned, "editing guidance keeps the note metadata in the text column");
+  await runAndWaitForReport(evaluate, paste(ptah.revision));
+  check(await evaluate(`![...document.querySelectorAll(".note-rule")].some(n => n.textContent === "filler.evaluative-closure")`),
+    "the reviewed Ptah revision removes the targeted construction");
 
   /* ---------- Renders ---------- */
 

@@ -10,14 +10,15 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "test": "npm run test:unit && npm run test:samples && npm run test:frames",
+    "test": "npm run test:unit && npm run test:samples && npm run test:frames && npm run test:rhetoric",
     "test:unit": "node --test 'src/**/*.test.mjs'",
     "test:samples": "node ../test/samples.mjs",
     "test:contract": "node ../test/contract.mjs",
     "build": "node build.mjs",
     "check-site": "node scripts/check-site.mjs --root .",
     "test:ui": "node scripts/ui-probe.mjs --base http://127.0.0.1:8790/",
-    "test:frames": "node ../test/frames.mjs"
+    "test:frames": "node ../test/frames.mjs",
+    "test:rhetoric": "node ../test/ptah-rhetoric.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.12",

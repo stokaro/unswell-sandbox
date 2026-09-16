@@ -919,7 +919,16 @@ body[data-format="python"] .report {
   margin-top: 2px;
 }
 
+.note-suggestion {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+
 .note-meta {
+  grid-column: 2;
   margin-top: 5px;
   font-family: var(--mono);
   font-size: 10px;
