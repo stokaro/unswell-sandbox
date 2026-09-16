@@ -34,7 +34,7 @@ export function renderRail(body: HTMLElement, report: Report): RailHandles {
       report.document.proseWords === 0
         ? "The engine found no English prose to check in this input."
         : `${report.document.proseWords} prose words in ${report.document.blocks} block(s), ` +
-          `${report.document.sentences} sentence(s). Every rule in the catalog ran and none activated.`;
+          `${report.document.sentences} sentence(s). No enabled rule reported a finding.`;
     clean.append(headline, detail);
     body.append(clean);
     return { notes };
@@ -123,6 +123,9 @@ function renderNote(finding: Finding, index: number): HTMLElement {
   }
   if (finding.metric) {
     meta.append(document.createTextNode(` · ${describeMetric(finding)}`));
+  }
+  if (finding.related?.length) {
+    meta.append(document.createTextNode(` · ${finding.related.length + 1} text locations`));
   }
   meta.append(document.createTextNode(` · +${formatScore(finding.points)} pts`));
 

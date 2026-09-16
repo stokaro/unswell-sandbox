@@ -65,7 +65,7 @@ export interface Finding {
   column: number;
   /** The parts of the span that are source text; markup between them is not. */
   segments: Span[];
-  related?: Span[];
+  related?: (Span & { segments?: Span[] })[];
   metric?: Metric;
   /** What this finding contributed to the paragraph index, after caps. */
   points: number;

@@ -197,12 +197,14 @@ export function renderReport(source: ByteText, report: Report): RenderResult {
   const marks = new Map<string, HTMLElement[]>();
   const findings = report.findings.map((finding) => ({
     ...finding,
-    segments: coalesce(source, finding.segments),
+    segments: coalesce(source, [
+      ...finding.segments,
+      ...(finding.related ?? []).flatMap((location) => location.segments ?? []),
+    ].sort((a, b) => a.start - b.start || a.end - b.end)),
   }));
 
-  // Findings are placed in the unit that contains them. One that spans a unit
-  // boundary -- a document-scope repetition finding, say -- is placed in the
-  // first unit it starts in, so every finding is drawn exactly once.
+  // A grouped finding can have evidence in several units. Draw every mapped
+  // segment; the final segment alone receives its finding number.
   const units = [...report.units].sort((a, b) => a.start - b.start);
   const placed = new Set<number>();
 
@@ -214,8 +216,7 @@ export function renderReport(source: ByteText, report: Report): RenderResult {
     }
     const inside: number[] = [];
     findings.forEach((finding, index) => {
-      if (placed.has(index)) return;
-      if (finding.start >= unit.start && finding.start < unit.end) {
+      if (finding.segments.some((segment) => segment.start < unit.end && segment.end > unit.start)) {
         placed.add(index);
         inside.push(index);
       }
