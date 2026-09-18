@@ -455,7 +455,7 @@ async function main() {
   })()`));
   check(rhetoric.found && rhetoric.text.includes(ptah.expected[0].text),
     "the Ptah purpose restatement is marked as a complete clause", rhetoric.text);
-  check(rhetoric.suggestion?.includes("Keep the preceding behavior") && rhetoric.meta.includes("+12 pts"),
+  check(rhetoric.suggestion?.includes("Keep the behavior") && rhetoric.meta.includes("+12 pts"),
     "the Ptah finding shows editing guidance and its real contribution", rhetoric.suggestion);
   check(rhetoric.active, "the Ptah note activates its source mark");
   check(rhetoric.aligned, "editing guidance keeps the note metadata in the text column");
