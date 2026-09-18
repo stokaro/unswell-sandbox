@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-40-g04a1942e0acf",
-  "unswellCommit": "04a1942e0acf94fc1c973838fab121832454c80b",
-  "unswellCommitDate": "2026-09-16T12:59:21+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-62-g6c5c4e6d860b",
+  "unswellCommit": "6c5c4e6d860b46105836a377bdf77c1b3b079303",
+  "unswellCommitDate": "2026-09-18T07:50:49+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-09-16T11:00:07Z",
+  "builtAt": "2026-09-18T06:11:42Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "db8f125df0abe263adebbe34d6a40d905a5b83488f2cf041d0db1630c5df93fd",
-    "bytes": 48378391,
-    "gzipBytes": 21926841
+    "sha256": "69910af55d4577a6b337736c6ac6041a23e0c7d573fceab089c35d78f353b531",
+    "bytes": 49320763,
+    "gzipBytes": 22159486
   },
   "rules": [
     {
@@ -32,7 +32,7 @@
     },
     {
       "id": "filler.document-justification",
-      "version": "1",
+      "version": "5",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "State the scope or destination directly instead of explaining why this page exists."
@@ -53,10 +53,17 @@
     },
     {
       "id": "filler.evaluative-closure",
-      "version": "1",
+      "version": "9",
       "group": "rhetorical-patterns",
       "severity": "warning",
-      "summary": "This closing judgment repeats a purpose or calls a result honest; state the consequence directly."
+      "summary": "This clause announces information or endorses a result; state the information directly."
+    },
+    {
+      "id": "filler.instruction-scaffolding",
+      "version": "11",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "State the supported action directly; preserve its conditions and optionality."
     },
     {
       "id": "filler.modern-world-opening",
@@ -64,6 +71,13 @@
       "group": "scaffolding",
       "severity": "warning",
       "summary": "Replace the generic opening with the document's subject."
+    },
+    {
+      "id": "filler.nominal-support",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "Consider expressing the action or frequency without this support noun."
     },
     {
       "id": "filler.section-announcement",
@@ -78,6 +92,13 @@
       "group": "inflation",
       "severity": "warning",
       "summary": "Check whether each hedge expresses a distinct uncertainty; retain needed qualifications."
+    },
+    {
+      "id": "filler.unscoped-assurance",
+      "version": "7",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "State the behavior, scope or evidence behind this quality claim."
     },
     {
       "id": "filler.weak-intensifiers",
@@ -157,18 +178,39 @@
       "summary": "Consider paragraph boundaries while keeping each condition with the statement it qualifies."
     },
     {
-      "id": "repetition.definition-echo",
-      "version": "1",
-      "group": "rhetorical-patterns",
+      "id": "repetition.adjacent-word",
+      "version": "2",
+      "group": "repetition",
       "severity": "warning",
-      "summary": "The definition repeats its subject before the contrast; explain the distinction directly."
+      "summary": "This word occurs twice in succession; check for an accidental duplicate."
     },
     {
-      "id": "repetition.exact-sentence",
+      "id": "repetition.definition-echo",
+      "version": "3",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "The definition repeats its subject; state the distinguishing information directly."
+    },
+    {
+      "id": "repetition.duplicate-list-item",
       "version": "1",
       "group": "repetition",
       "severity": "warning",
+      "summary": "This complete list item is repeated in the same list; check whether both entries describe the same change."
+    },
+    {
+      "id": "repetition.exact-sentence",
+      "version": "2",
+      "group": "repetition",
+      "severity": "warning",
       "summary": "This sentence is repeated; consider whether every occurrence is needed."
+    },
+    {
+      "id": "repetition.explanatory-restart",
+      "version": "2",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "The explanation repeats a judgment; state it once and name the concrete cause."
     },
     {
       "id": "repetition.heading-echo",
@@ -179,7 +221,7 @@
     },
     {
       "id": "repetition.near-sentence",
-      "version": "2",
+      "version": "3",
       "group": "repetition",
       "severity": "warning",
       "summary": "These sentences have high lexical overlap; check for repeated information."
@@ -193,7 +235,7 @@
     },
     {
       "id": "repetition.paragraph-openers",
-      "version": "2",
+      "version": "3",
       "group": "repetition",
       "severity": "warning",
       "summary": "Several paragraphs repeat the same opening formula."
@@ -206,8 +248,29 @@
       "summary": "These prose blocks have high lexical overlap; check for repeated information."
     },
     {
-      "id": "repetition.sentence-openers",
+      "id": "repetition.redundant-predicate",
+      "version": "2",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "The predicate repeats the relation already named by its subject."
+    },
+    {
+      "id": "repetition.redundant-support",
       "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "This clause marks the same relationship twice; check whether one marker is enough."
+    },
+    {
+      "id": "repetition.repeated-claim",
+      "version": "2",
+      "group": "repetition",
+      "severity": "warning",
+      "summary": "These passages repeat an assertion; check whether the explanation can be shared."
+    },
+    {
+      "id": "repetition.sentence-openers",
+      "version": "2",
       "group": "repetition",
       "severity": "warning",
       "summary": "Several sentences repeat the same opening; consider removing repeated setup."
