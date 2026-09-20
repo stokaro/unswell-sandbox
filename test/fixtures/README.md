@@ -17,3 +17,15 @@ controls accompany the original expected clause ranges. The same MIT notice
 applies. These are assistant-authored development judgments, not independent
 human labels. `test/ptah-rhetoric.mjs` checks them through the WASM host, including
 the editing guidance and score contribution shown by the page.
+
+`ptah-configure-provider.md` preserves the complete source of the numerical
+introduction reported by the maintainer: "Four lines of a specification decide
+where your corpus goes", followed by "The four lines". It is an exposed
+regression, not a held-out quality benchmark. `test/numbered-framing.mjs` checks
+both source locations through the WASM host, a proposed wording revision, and
+technical count controls.
+
+- Source: stokaro/ptah at `7b47e7cfb5d4ff32a38375345069f5533bff892f`.
+- Path: `docs/site/src/content/docs/inference/guides/configure-a-provider.md`.
+- SHA-256: `efd32270f4edd576f617d76a812b76215eb80f1c7fa68ef6d2400bb35d973e10`.
+- License: MIT; see `PTAH-LICENSE`.
