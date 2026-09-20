@@ -21,6 +21,9 @@ export function renderRail(body: HTMLElement, report: Report): RailHandles {
 
   body.append(renderStats(report));
 
+  const unavailable = renderOriginNotice(report);
+  if (unavailable) body.append(unavailable);
+
   if (report.findings.length === 0) {
     const clean = document.createElement("div");
     clean.className = "note-clean";
@@ -47,6 +50,30 @@ export function renderRail(body: HTMLElement, report: Report): RailHandles {
   });
 
   return { notes };
+}
+
+/**
+ * Says why the origin channel produced nothing, when it produced nothing.
+ *
+ * The estimate is an optional badge beside a paragraph, so its absence looks
+ * exactly like a paragraph the model abstained on, which is the common and
+ * uninteresting case. A channel that could not run at all is a different fact
+ * and the rail states it in words.
+ */
+function renderOriginNotice(report: Report): HTMLElement | null {
+  const origin = report.origin;
+  if (!origin || origin.available) return null;
+  const notice = document.createElement("div");
+  notice.className = "note-origin";
+  const headline = document.createElement("div");
+  headline.append(document.createTextNode("Origin estimate unavailable. "));
+  const strong = document.createElement("strong");
+  strong.textContent = origin.status ?? "unavailable";
+  headline.append(strong);
+  const detail = document.createElement("div");
+  detail.textContent = origin.reason ?? "The origin channel reported no estimate for this run.";
+  notice.append(headline, detail);
+  return notice;
 }
 
 function renderStats(report: Report): HTMLElement {

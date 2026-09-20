@@ -6,7 +6,7 @@ SHELL := /bin/sh
 
 .POSIX:
 .PHONY: wasm pin build-web serve check-site smoke test test-contract test-samples test-frames test-rhetoric test-numbered \
-	typecheck test-unit ui-probe dev-tree clean
+	test-origin typecheck test-unit ui-probe dev-tree clean
 
 # wasm builds web/vendor/unswell/{unswell.wasm,wasm_exec.js,manifest.json}.
 wasm:
@@ -46,12 +46,18 @@ check-site:
 # test drives the real binary outside a browser: the host contract, then the
 # three sample documents through the real rule catalog. It needs
 # web/vendor/unswell/unswell.wasm, so run `make wasm` first if Go source moved.
-test: test-unit test-contract test-samples test-frames test-rhetoric test-numbered
+test: test-unit test-contract test-samples test-origin test-frames test-rhetoric test-numbered
 
 # test-contract exercises the host boundary itself: ready(), one analysis, a
 # refused concurrent analysis, a rejected format and a rejected profile.
 test-contract:
 	node test/contract.mjs
+
+# test-origin pins the experimental origin channel: an estimate where the
+# shipped pack accepts a paragraph, a stated reason everywhere else, and never
+# the refused-pack status that issue 5 reported.
+test-origin:
+	node test/origin.mjs
 
 # test-samples asserts that the three sample documents still mean what the page
 # says they mean, including that the revision produces exactly zero findings.

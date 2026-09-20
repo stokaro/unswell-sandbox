@@ -958,6 +958,27 @@ body[data-format="python"] .report {
   font-weight: 600;
 }
 
+/* The origin channel could not run. It sits between the stat cards and the
+   notes, styled like the clean-run card rather than like an error, because a
+   missing experimental estimate is not a failed analysis. */
+.note-origin {
+  display: grid;
+  gap: 6px;
+  padding: 14px 12px;
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.note-origin strong {
+  color: var(--muted);
+  font-weight: 600;
+  font-family: var(--mono);
+}
+
 .rail-error {
   padding: 12px;
   border: 1px solid var(--forbid);
