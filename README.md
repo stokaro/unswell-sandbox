@@ -277,6 +277,58 @@ says "this stretch", which is what the rule said.
 - **Two formats, not eighteen.** The engine supports eighteen; each one would
   need a sample, a document font and a legend line of its own.
 
+## The origin channel
+
+The page shows an experimental origin estimate beside a paragraph: how much the
+paragraph resembles a training class of generated documentation. It is not a
+quality judgment, it names nobody as an author, and it decides no gate. The
+estimate comes from `unswell-origin-lexical-v1`, the pack this build embeds.
+
+### Why it needs an engine of its own
+
+A probability pack records how its text was prepared, and the engine refuses a
+pack whose record does not match the run. `unswell-origin-lexical-v1` was
+fitted with document structure off.
+
+A rule that declares `RequiresStructure` turns structure on for the whole run.
+Four repetition rules began declaring it upstream, and they ship enabled, so
+every run prepared text with structure, the preparation hash stopped matching
+the pack, and each unit came back `incompatible_model`. The page lost the
+estimate and said nothing about why, which is issue 5.
+
+Two answers were available and only one is honest. Rewriting the pack's
+recorded contract, or relaxing the compatibility check, would restore numbers
+computed on text the model was never fitted on. Instead the build estimates in
+a second engine whose enabled rules do not require structure, so the pack sees
+the text it expects. `originOverrides` in
+`runtime/unswell/cmd/unswell-wasm/engines.go` derives that rule list from the
+catalog rather than naming rules by hand, so a rule added upstream is covered
+the day it ships.
+
+Nothing else of that second run reaches the page. Its findings, its index and
+its gate are discarded; the visitor reads the findings of the profile they
+chose. The cost is one more pass over the same text.
+
+The upstream fix that would retire this is
+[stokaro/unswell#335](https://github.com/stokaro/unswell/issues/335): prepare a
+channel's source with the switches its own pack declares.
+
+### When it cannot estimate
+
+The pack abstains outside the 25 to 89 word band it was fitted on, which is
+most paragraphs, so a missing badge is the ordinary case and means nothing. A
+channel that could not run at all is a different fact, and a blank strip states
+neither. The payload therefore carries the channel's own state, and the rail
+says in words when there is nothing to show: the status the engine reported and
+a sentence explaining it.
+
+`test/origin.mjs` pins both halves at the host boundary, and it runs in
+`make test`, which the deploy workflow runs before publishing. It asserts an
+estimate where the pack accepts a paragraph, a stated reason everywhere else,
+and `incompatible_model` nowhere. The browser probe checks the same thing
+through the page: badges on the AI-flavored sample, and a stated reason on a
+document too short to estimate.
+
 ## The samples
 
 Three files in `web/samples/`, and `test/samples.mjs` runs all three through

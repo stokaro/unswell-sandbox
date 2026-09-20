@@ -300,6 +300,7 @@ async function main() {
       texts: badges.map(b => b.textContent),
       titled: badges.every(b => (b.title || "").includes("not a quality judgment")),
       levels: [...new Set(badges.map(b => b.dataset.level))],
+      notice: document.querySelectorAll(".note-origin").length,
     });
   })()`);
   const o = JSON.parse(origin);
@@ -310,7 +311,37 @@ async function main() {
   check(o.titled, "each estimate says it is not a quality judgment");
   check(o.levels.every(l => l === "high" || l === "low"), "each estimate carries a level",
     o.levels.join(","));
+  check(o.notice === 0, "a run that estimates does not also claim the channel is unavailable",
+    `${o.notice} notice(s)`);
   console.log(`      AI-flavored sample origin: ${o.texts.join(", ") || "none in band"}`);
+
+  /* ---------- An unavailable channel says why ---------- */
+
+  // A missing badge cannot distinguish "the model abstained here" from "the
+  // model could not run at all". Short prose produces the second, and the rail
+  // has to put it in words rather than leaving the strip blank.
+  await runAndWaitForReport(evaluate, `(() => {
+    document.getElementById("clear").click();
+    const input = document.getElementById("input");
+    input.value = ["# Title", "", "Short line here.", ""].join(String.fromCharCode(10));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("analyze").click();
+  })()`);
+  const silent = JSON.parse(await evaluate(`(() => {
+    const notice = document.querySelector(".note-origin");
+    return JSON.stringify({
+      shown: Boolean(notice),
+      status: notice?.querySelector("strong")?.textContent ?? "",
+      text: notice?.textContent ?? "",
+      badges: document.querySelectorAll(".para-origin").length,
+    });
+  })()`));
+  check(silent.shown, "the rail says why the origin channel produced nothing");
+  check(silent.badges === 0, "no estimate is drawn while the channel is unavailable",
+    `${silent.badges} badge(s)`);
+  check(/[a-z]\.$/.test(silent.text.trim()),
+    "the reason reads as a sentence", silent.text.trim().slice(-60));
+  console.log(`      unavailable status: ${silent.status}`);
 
   /* ---------- The revision is clean ---------- */
 

@@ -128,6 +128,16 @@ export interface Report {
   maxIndex: number;
   units: Unit[];
   findings: Finding[];
+  /**
+   * The state of the experimental origin channel for this run. A run where no
+   * paragraph carries an estimate is not the same as a run where every
+   * paragraph scored zero, and the page says which it was.
+   */
+  origin?: {
+    available: boolean;
+    status?: string;
+    reason?: string;
+  };
   incomplete: boolean;
   notes?: string[];
 }

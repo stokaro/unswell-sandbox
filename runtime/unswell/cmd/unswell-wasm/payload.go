@@ -43,6 +43,10 @@ type payload struct {
 	MaxIndex   float64       `json:"maxIndex"`
 	Units      []unitStamp   `json:"units"`
 	Findings   []findingStub `json:"findings"`
+	// Origin is the state of the experimental origin channel for this run. It
+	// is separate from Units so the page can say why no paragraph carries an
+	// estimate, which a missing badge cannot say on its own.
+	Origin originChannelStamp `json:"origin"`
 	// Incomplete is the engine's own word for a run that did not cover
 	// everything it was asked to. The page says so rather than presenting a
 	// partial report as a whole one.
@@ -151,6 +155,8 @@ func buildPayload(
 	result unswell.Result,
 	profile string,
 	elapsed time.Duration,
+	origins map[document.Span]originEstimate,
+	channel originChannelStamp,
 ) (string, error) {
 	out := payload{
 		Profile:    profile,
@@ -166,6 +172,7 @@ func buildPayload(
 			GateMode:       result.Manifest.GateMode,
 		},
 		Gate:       gateStamp{Passed: result.Gate.Passed, Reasons: []gateReason{}},
+		Origin:     channel,
 		Units:      []unitStamp{},
 		Findings:   []findingStub{},
 		Incomplete: result.Status != "complete",
@@ -202,6 +209,13 @@ func buildPayload(
 		if assessment.Scope != "paragraph" {
 			continue
 		}
+		// The estimate comes from the origin engine, which prepares text the
+		// way the pack was fitted. Where that run has nothing to say about a
+		// span, this run's own answer stands rather than a blank.
+		estimate := originEstimate{value: assessment.OriginEstimate, status: assessment.OriginStatus}
+		if found, ok := origins[assessment.Span]; ok {
+			estimate = found
+		}
 		out.Units = append(out.Units, unitStamp{
 			ID:           assessment.UnitID,
 			Start:        assessment.Span.Start,
@@ -209,8 +223,8 @@ func buildPayload(
 			Words:        assessment.Words,
 			Score:        assessment.EffectiveSlopScore,
 			Context:      contextAt(contexts, assessment.Span),
-			Origin:       assessment.OriginEstimate,
-			OriginStatus: assessment.OriginStatus,
+			Origin:       estimate.value,
+			OriginStatus: estimate.status,
 		})
 		for _, contribution := range effectiveContributions(assessment) {
 			points[contribution.FindingID] += contribution.Effective

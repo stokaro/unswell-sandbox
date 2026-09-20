@@ -223,7 +223,12 @@ func (a *analyzer) execute(ctx context.Context, runID int, text, profile, format
 		return
 	}
 
-	encoded, err := buildPayload(ctx, engine, source, result, profile, elapsed)
+	// The origin channel runs after the analysis the page prints, over the
+	// same source, in an engine of its own. Its cost is one more pass and its
+	// failure costs an estimate, never a finding.
+	origins, channel := collectOrigins(ctx, a.engines, profile, source)
+
+	encoded, err := buildPayload(ctx, engine, source, result, profile, elapsed, origins, channel)
 	if err != nil {
 		a.host.failed(runID, "unswell-wasm: "+err.Error())
 		return
