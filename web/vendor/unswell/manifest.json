@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-62-g6c5c4e6d860b",
-  "unswellCommit": "6c5c4e6d860b46105836a377bdf77c1b3b079303",
-  "unswellCommitDate": "2026-09-18T07:50:49+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-63-gfa1743891a3e",
+  "unswellCommit": "fa1743891a3e82d2d5361f41762604767b497b8f",
+  "unswellCommitDate": "2026-09-19T17:38:31+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-09-18T06:11:42Z",
+  "builtAt": "2026-09-19T15:39:26Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "69910af55d4577a6b337736c6ac6041a23e0c7d573fceab089c35d78f353b531",
-    "bytes": 49320763,
-    "gzipBytes": 22159486
+    "sha256": "6813a56a96d1d15528fd6428d29b06d2ca464af958071559e6624f301402fe0f",
+    "bytes": 49348149,
+    "gzipBytes": 22163531
   },
   "rules": [
     {
@@ -78,6 +78,13 @@
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "Consider expressing the action or frequency without this support noun."
+    },
+    {
+      "id": "filler.numbered-section-framing",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "The introduction and heading emphasize a count instead of naming the section's subject."
     },
     {
       "id": "filler.section-announcement",
