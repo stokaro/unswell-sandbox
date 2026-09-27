@@ -155,7 +155,6 @@ func buildPayload(
 	result unswell.Result,
 	profile string,
 	elapsed time.Duration,
-	origins map[document.Span]originEstimate,
 	channel originChannelStamp,
 ) (string, error) {
 	out := payload{
@@ -209,13 +208,6 @@ func buildPayload(
 		if assessment.Scope != "paragraph" {
 			continue
 		}
-		// The estimate comes from the origin engine, which prepares text the
-		// way the pack was fitted. Where that run has nothing to say about a
-		// span, this run's own answer stands rather than a blank.
-		estimate := originEstimate{value: assessment.OriginEstimate, status: assessment.OriginStatus}
-		if found, ok := origins[assessment.Span]; ok {
-			estimate = found
-		}
 		out.Units = append(out.Units, unitStamp{
 			ID:           assessment.UnitID,
 			Start:        assessment.Span.Start,
@@ -223,8 +215,8 @@ func buildPayload(
 			Words:        assessment.Words,
 			Score:        assessment.EffectiveSlopScore,
 			Context:      contextAt(contexts, assessment.Span),
-			Origin:       estimate.value,
-			OriginStatus: estimate.status,
+			Origin:       assessment.OriginEstimate,
+			OriginStatus: assessment.OriginStatus,
 		})
 		for _, contribution := range effectiveContributions(assessment) {
 			points[contribution.FindingID] += contribution.Effective

@@ -7,11 +7,9 @@
  * expected everywhere else; and `incompatible_model`, which means the engine
  * refused the pack outright, is expected nowhere.
  *
- * That last one is the regression of issue 5. The pack is fitted on text
- * prepared without document structure, any enabled rule that requires
- * structure changes how the run prepares text, and the engine then refuses the
- * pack for the whole run. The build answers that by estimating in an engine of
- * its own; see originOverrides in runtime/unswell/cmd/unswell-wasm/engines.go.
+ * Core prepares each model's features using its recorded contract, independently
+ * of enabled structural rules. The playground uses that single completed result
+ * for findings and origin estimates; no second engine overrides its assessments.
  *
  * Run it with `make test`, or directly:
  *
@@ -94,13 +92,11 @@ await unavailable("short prose", "# Title\n\nShort line here.\n", "insufficient_
 // No prose at all: the channel has nothing to measure and says so.
 await unavailable("empty input", "\n", "no_prose");
 
-// The findings the page prints must not move because the channel exists. The
-// origin engine disables rules, and if its rule set ever reached the report,
-// this is where it would show.
+// Structural editorial rules and the origin channel must coexist in one result.
 const text = await readFile(join(samples, "ai-flavored.md"), "utf8");
 const report = await runtime.analyze(text, "technical", "markdown");
 check(report.findings.some((finding) => finding.ruleId.startsWith("repetition.")),
-  "ai-flavored.md: no repetition finding survived; the origin engine's rule set reached the report");
+  "ai-flavored.md: no repetition finding survived alongside the origin channel");
 
 console.log(
   `origin: unswell ${runtime.info.version} (${runtime.info.commit.slice(0, 12)}); ` +

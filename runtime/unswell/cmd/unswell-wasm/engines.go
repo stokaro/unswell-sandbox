@@ -5,8 +5,6 @@ package main
 import (
 	_ "embed"
 	"fmt"
-	"sort"
-	"strings"
 	"sync"
 
 	"github.com/stokaro/unswell"
@@ -72,7 +70,6 @@ type engineSet struct {
 
 	mu      sync.Mutex
 	engines map[string]*unswell.Engine
-	origins map[string]*unswell.Engine
 }
 
 func newEngineSet() (*engineSet, error) {
@@ -81,7 +78,7 @@ func newEngineSet() (*engineSet, error) {
 		return nil, fmt.Errorf("build the English NLP provider: %w", err)
 	}
 	set := &engineSet{provider: provider,
-		engines: map[string]*unswell.Engine{}, origins: map[string]*unswell.Engine{}}
+		engines: map[string]*unswell.Engine{}}
 
 	// The default profile is built eagerly: ready() announces the rule catalog,
 	// and the catalog comes from an engine. The others are built on first use,
@@ -119,70 +116,6 @@ func (s *engineSet) engine(profile string) (*unswell.Engine, error) {
 		return nil, fmt.Errorf("build the %s engine: %w", profile, err)
 	}
 	s.engines[profile] = engine
-	return engine, nil
-}
-
-// originOverrides turns off every rule that asks the engine for document
-// structure. It is generated from the catalog rather than listed by hand, so a
-// rule added upstream is covered the day it ships.
-//
-// The reason is the origin pack, not the rules. A rule that declares
-// RequiresStructure makes the whole run prepare text with structure, that
-// preparation is part of the hash a pack is matched against, and
-// unswell-origin-lexical-v1 was fitted with structure off. The engine then
-// refuses the pack and every unit reports incompatible_model. Turning these
-// rules off in the origin engine alone prepares text the way the pack was
-// fitted, which is what makes the estimate valid rather than merely present.
-// See stokaro/unswell#335 for the upstream fix that would retire this.
-func originOverrides(catalog []rule.Descriptor) string {
-	var ids []string
-	for _, descriptor := range catalog {
-		if descriptor.RequiresStructure {
-			ids = append(ids, descriptor.ID)
-		}
-	}
-	if len(ids) == 0 {
-		return ""
-	}
-	sort.Strings(ids)
-	var out strings.Builder
-	out.WriteString("rules:\n")
-	for _, id := range ids {
-		fmt.Fprintf(&out, "  %s: {enabled: false}\n", id)
-	}
-	return out.String()
-}
-
-// originEngine returns the engine that estimates the origin channel for a
-// profile. It scores nothing the page prints: its findings and its gate are
-// discarded, and only its origin estimates are read.
-func (s *engineSet) originEngine(profile string) (*unswell.Engine, error) {
-	if !validProfile(profile) {
-		return nil, fmt.Errorf("unknown profile %q", profile)
-	}
-	// Taken before the lock: engine() takes the same mutex.
-	base, err := s.engine(engineProfiles[0])
-	if err != nil {
-		return nil, err
-	}
-	overrides := originOverrides(base.Catalog())
-
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if engine := s.origins[profile]; engine != nil {
-		return engine, nil
-	}
-	engine, err := unswell.New(unswell.Options{
-		Config:      append(profileConfig(profile), overrides...),
-		NLP:         s.provider,
-		OriginModel: originPack,
-		AllowEmpty:  true,
-		Jobs:        1,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("build the %s origin engine: %w", profile, err)
-	}
-	s.origins[profile] = engine
 	return engine, nil
 }
 
