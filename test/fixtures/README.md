@@ -29,3 +29,15 @@ technical count controls.
 - Path: `docs/site/src/content/docs/inference/guides/configure-a-provider.md`.
 - SHA-256: `efd32270f4edd576f617d76a812b76215eb80f1c7fa68ef6d2400bb35d973e10`.
 - License: MIT; see `PTAH-LICENSE`.
+
+`ptah-consistency-mode.md` preserves the complete source of the standalone
+opening in stokaro/unswell#337: "Four answers, and the right one depends on
+whether you control the writes." It is exposed development data, not a new
+confirmation page. `test/numerical-choice.mjs` checks bytes 477–550, the suggested
+revision, and technical count controls through the actual WASM host in both
+profiles. The diagnostic does not establish that the number is incorrect.
+
+- Source: stokaro/ptah at `654eae5591392278e6c8bce8e54737f780766f19`.
+- Path: `docs/site/src/content/docs/inference/strategies/choose-a-consistency-mode.md`.
+- SHA-256: `15f248e0dac75972bbfaad188136a5ee28a829824e04492fdedf55ea1df87124`.
+- License: MIT; see `PTAH-LICENSE`.

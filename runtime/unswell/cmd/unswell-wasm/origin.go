@@ -3,18 +3,10 @@
 package main
 
 import (
-	"context"
 	"sort"
 
-	"github.com/stokaro/unswell/document"
+	"github.com/stokaro/unswell"
 )
-
-// originEstimate is one paragraph's answer from the origin channel: a value
-// when the pack accepted the paragraph, and the reason it did not otherwise.
-type originEstimate struct {
-	value  *float64
-	status string
-}
 
 // originChannelStamp is what the page says about the channel as a whole. The
 // page needs the difference between "the model estimated a low number" and
@@ -25,36 +17,16 @@ type originChannelStamp struct {
 	Reason    string `json:"reason,omitempty"`
 }
 
-// collectOrigins runs the origin engine over the same source and returns its
-// estimates by span. The origin engine disables the rules that require
-// document structure, so the text reaches the pack prepared the way the pack
-// was fitted; see originOverrides.
-//
-// Nothing else of that run is used. Its findings, its index and its gate are
-// discarded: the page prints the findings of the profile the visitor chose,
-// and a second rule set must not change them.
-func collectOrigins(ctx context.Context, engines *engineSet, profile string,
-	source document.Source,
-) (map[document.Span]originEstimate, originChannelStamp) {
-	engine, err := engines.originEngine(profile)
-	if err != nil {
-		return nil, originChannelStamp{Status: "engine_unavailable", Reason: originReason("engine_unavailable")}
-	}
-	result, err := engine.Analyze(ctx, source)
-	if err != nil {
-		// A failed second run is not a failed analysis. The page keeps the
-		// findings it already has and says the estimate is missing.
-		return nil, originChannelStamp{Status: "run_failed", Reason: originReason("run_failed")}
-	}
-
-	estimates := map[document.Span]originEstimate{}
+// summarizeOrigin describes the channel already present in the completed result.
+// Core prepares each model's features using that pack's recorded contract, so
+// the playground does not need a second analysis with structural rules disabled.
+func summarizeOrigin(result unswell.Result) originChannelStamp {
 	counts := map[string]int{}
 	available := false
 	for _, assessment := range result.Assessments {
 		if assessment.Scope != "paragraph" {
 			continue
 		}
-		estimates[assessment.Span] = originEstimate{value: assessment.OriginEstimate, status: assessment.OriginStatus}
 		if assessment.OriginEstimate != nil {
 			available = true
 			continue
@@ -64,13 +36,13 @@ func collectOrigins(ctx context.Context, engines *engineSet, profile string,
 		}
 	}
 	if available {
-		return estimates, originChannelStamp{Available: true, Status: "available"}
+		return originChannelStamp{Available: true, Status: "available"}
 	}
 	status := dominantStatus(counts)
 	if status == "" {
 		status = "no_prose"
 	}
-	return estimates, originChannelStamp{Status: status, Reason: originReason(status)}
+	return originChannelStamp{Status: status, Reason: originReason(status)}
 }
 
 // dominantStatus names the reason that covers most paragraphs, with ties
