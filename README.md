@@ -81,6 +81,10 @@ From a clean build on darwin/arm64 with go1.27.1, at the pin
 | boot to `ready()`, headless Chrome, localhost | ~560 ms |
 | one analysis of the AI-flavored sample | 150–190 ms |
 
+The current `e146774df81e` build contains 57 rules. Its WASM is 49,793,410 bytes
+raw and 22,254,657 bytes with `gzip -9`, built with go1.27.1 on darwin/arm64.
+The timing figures above describe the earlier alpha.3 build.
+
 ## The pin
 
 `third_party/unswell.pin` is the pin: three lines naming the upstream commit,
@@ -284,34 +288,18 @@ paragraph resembles a training class of generated documentation. It is not a
 quality judgment, it names nobody as an author, and it decides no gate. The
 estimate comes from `unswell-origin-lexical-v1`, the pack this build embeds.
 
-### Why it needs an engine of its own
+### Model preparation and editorial rules
 
-A probability pack records how its text was prepared, and the engine refuses a
-pack whose record does not match the run. `unswell-origin-lexical-v1` was
-fitted with document structure off.
+A probability pack records how its text was prepared. Core prepares each channel
+with the switches its own pack declares, independently of the editorial rules.
+The shipped lexical pack can therefore use unstructured features while structural
+repetition rules remain enabled in the same analysis.
 
-A rule that declares `RequiresStructure` turns structure on for the whole run.
-Four repetition rules began declaring it upstream, and they ship enabled, so
-every run prepared text with structure, the preparation hash stopped matching
-the pack, and each unit came back `incompatible_model`. The page lost the
-estimate and said nothing about why, which is issue 5.
-
-Two answers were available and only one is honest. Rewriting the pack's
-recorded contract, or relaxing the compatibility check, would restore numbers
-computed on text the model was never fitted on. Instead the build estimates in
-a second engine whose enabled rules do not require structure, so the pack sees
-the text it expects. `originOverrides` in
-`runtime/unswell/cmd/unswell-wasm/engines.go` derives that rule list from the
-catalog rather than naming rules by hand, so a rule added upstream is covered
-the day it ships.
-
-Nothing else of that second run reaches the page. Its findings, its index and
-its gate are discarded; the visitor reads the findings of the profile they
-chose. The cost is one more pass over the same text.
-
-The upstream fix that would retire this is
-[stokaro/unswell#335](https://github.com/stokaro/unswell/issues/335): prepare a
-channel's source with the switches its own pack declares.
+This follows the core fix in
+[stokaro/unswell#335](https://github.com/stokaro/unswell/issues/335). The playground
+now reads findings, scores, gate decisions, and origin estimates from one completed
+result. It no longer disables rules in a second engine or analyzes the page twice.
+The model's recorded contract is unchanged; compatibility checks still apply.
 
 ### When it cannot estimate
 
