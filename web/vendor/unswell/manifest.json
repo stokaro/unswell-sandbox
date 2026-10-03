@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-83-ge146774df81e",
-  "unswellCommit": "e146774df81ee8c106ece4abc4017d41c23a46e0",
-  "unswellCommitDate": "2026-09-27T22:37:15+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-96-gee1f88695fa4",
+  "unswellCommit": "ee1f88695fa4679b4727a180380cd2ba589e5c8e",
+  "unswellCommitDate": "2026-10-03T23:14:48+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-09-27T20:41:41Z",
+  "builtAt": "2026-10-03T21:28:37Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "5b6e67a6bca8e0982af55f4b86910eb9bf5e7c5e49ce69bcebb6134d1a4d1b1c",
-    "bytes": 49793410,
-    "gzipBytes": 22254657
+    "sha256": "bad91003402431d5ba3c2c195e27840e85c19d9809be0f12383e0d2b72c3a6b9",
+    "bytes": 50627238,
+    "gzipBytes": 22376579
   },
   "rules": [
     {
@@ -39,7 +39,7 @@
     },
     {
       "id": "filler.document-metadiscourse",
-      "version": "1",
+      "version": "2",
       "group": "rhetorical-patterns",
       "severity": "note",
       "summary": "Document self-description: check whether this announcement or navigation helps the reader."
@@ -53,7 +53,7 @@
     },
     {
       "id": "filler.evaluative-closure",
-      "version": "9",
+      "version": "10",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "This clause announces information or endorses a result; state the information directly."
@@ -109,7 +109,7 @@
     },
     {
       "id": "filler.unscoped-assurance",
-      "version": "8",
+      "version": "9",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "State the behavior, scope or evidence behind this quality claim."
@@ -214,7 +214,7 @@
     },
     {
       "id": "repetition.exact-sentence",
-      "version": "2",
+      "version": "3",
       "group": "repetition",
       "severity": "warning",
       "summary": "This sentence is repeated; consider whether every occurrence is needed."
@@ -277,7 +277,7 @@
     },
     {
       "id": "repetition.repeated-claim",
-      "version": "2",
+      "version": "3",
       "group": "repetition",
       "severity": "warning",
       "summary": "These passages repeat an assertion; check whether the explanation can be shared."
