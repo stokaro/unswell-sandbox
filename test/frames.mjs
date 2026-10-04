@@ -40,7 +40,9 @@ for (const profile of ["technical", "strict"]) {
 
   const actual = await runtime.analyze(page, profile);
   assert.equal(actual.incomplete, false);
-  assert.equal(actual.findings.length, profile === "strict" ? 8 : 6);
+  assert.equal(actual.findings.length, profile === "strict" ? 7 : 5);
+  // Contrast frequency is opt-in; the default keeps the actual construction notes.
+  assert.equal(actual.findings.some((f) => f.ruleId === "syntax.paired-contrast-density"), false);
   assert.equal(actual.gate.passed, true);
   assert.equal(actual.maxIndex, 8);
   const meta = actual.findings.filter((f) => f.ruleId === metaId);

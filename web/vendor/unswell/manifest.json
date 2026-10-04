@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-96-gee1f88695fa4",
-  "unswellCommit": "ee1f88695fa4679b4727a180380cd2ba589e5c8e",
-  "unswellCommitDate": "2026-10-03T23:14:48+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-99-g2e5a560d3d94",
+  "unswellCommit": "2e5a560d3d94478da22a4cbb748470bc8fb17fc6",
+  "unswellCommitDate": "2026-10-04T06:06:34+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-10-03T21:28:37Z",
+  "builtAt": "2026-10-04T04:29:59Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "bad91003402431d5ba3c2c195e27840e85c19d9809be0f12383e0d2b72c3a6b9",
-    "bytes": 50627238,
-    "gzipBytes": 22376579
+    "sha256": "9237caa0e18e6d69d9c2d71c6654e0fd60691a086cf6eea4e69751ddd53fd010",
+    "bytes": 50708626,
+    "gzipBytes": 22391474
   },
   "rules": [
     {
@@ -39,7 +39,7 @@
     },
     {
       "id": "filler.document-metadiscourse",
-      "version": "2",
+      "version": "3",
       "group": "rhetorical-patterns",
       "severity": "note",
       "summary": "Document self-description: check whether this announcement or navigation helps the reader."
@@ -53,7 +53,7 @@
     },
     {
       "id": "filler.evaluative-closure",
-      "version": "10",
+      "version": "11",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "This clause announces information or endorses a result; state the information directly."
@@ -361,7 +361,7 @@
     },
     {
       "id": "syntax.paired-contrast-density",
-      "version": "2",
+      "version": "3",
       "group": "rhetorical-patterns",
       "severity": "note",
       "summary": "Check whether repeated paired contrasts carry distinct information."
@@ -382,7 +382,7 @@
     },
     {
       "id": "syntax.repeated-reframing",
-      "version": "1",
+      "version": "2",
       "group": "rhetorical-patterns",
       "severity": "note",
       "summary": "Repeated denial and redefinition: review whether both clauses add information."
