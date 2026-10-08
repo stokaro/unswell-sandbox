@@ -18,7 +18,7 @@ import type { HostEvent, Report, WorkerRequest } from "./protocol.ts";
 import { ByteText, renderReport } from "./render.ts";
 import { renderRail } from "./rail.ts";
 
-type Format = "markdown" | "python";
+type Format = "markdown" | "mdx" | "python";
 type Profile = "technical" | "strict";
 
 const SAMPLES: Record<Format, { flavored: string; revised: string; label: string }> = {
@@ -26,6 +26,11 @@ const SAMPLES: Record<Format, { flavored: string; revised: string; label: string
     flavored: "samples/ai-flavored.md",
     revised: "samples/revised.md",
     label: "Load AI-flavored sample",
+  },
+  mdx: {
+    flavored: "samples/correlate-messages.mdx",
+    revised: "samples/revised.md",
+    label: "Load AI-flavored MDX sample",
   },
   python: {
     flavored: "samples/retry_client.py",
@@ -215,7 +220,7 @@ function updateControls(): void {
   }
   clearButton.disabled = !hasText;
   sampleButton.textContent = SAMPLES[format].label;
-  legendCode.hidden = format !== "python";
+  legendCode.hidden = format === "markdown";
   countWords();
 }
 

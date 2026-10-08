@@ -248,6 +248,8 @@ func extensionFor(format document.Format) string {
 	switch format {
 	case document.Markdown:
 		return ".md"
+	case document.MDX:
+		return ".mdx"
 	case document.Python:
 		return ".py"
 	default:

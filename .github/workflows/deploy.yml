@@ -204,9 +204,9 @@ jobs:
         run: npm run build
         working-directory: web
 
-      # The engine, driven outside a browser: the host contract, then the three
-      # sample documents through the real rule catalog. It runs here rather than
-      # in the check job because it needs the linked binary.
+      # The engine, driven outside a browser: the host contract, sample documents,
+      # and construction regressions through the real rule catalog. This job
+      # needs the linked binary.
       - name: The engine answers, and the samples still mean what the page says
         run: make test
 

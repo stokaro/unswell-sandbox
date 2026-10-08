@@ -4,8 +4,11 @@ The source of [play.unswell.dev](https://play.unswell.dev) — the Unswell engin
 running in a browser tab. Real Unswell, compiled to WebAssembly. No server, no
 account, nothing installed, and the text never leaves the page.
 
-You paste a paragraph of English prose, or a Python file, and the engine marks
-what it found inline and lists each finding as a note in the margin.
+Paste English prose, a Markdown or MDX document, or a Python file. The engine
+marks what it found inline and lists each finding as a note in the margin.
+Choose MDX for a document with imports, JavaScript expressions or JSX components.
+The native extractor excludes that syntax and keeps the original prose locations;
+it does not evaluate the document's JavaScript or components.
 
 ## Why it is built this way
 
@@ -276,10 +279,8 @@ says "this stretch", which is what the rule said.
 - **No dark mode.** The mock is one light palette and the page implements that
   palette. `color-scheme: light` is declared so form controls match rather than
   inverting.
-- **No Markdown or Python rendering.** The document pane shows the source as
+- **Source view.** The document pane shows the source as
   typed, with hard line breaks preserved. It is what the engine read.
-- **Two formats, not eighteen.** The engine supports eighteen; each one would
-  need a sample, a document font and a legend line of its own.
 
 ## The origin channel
 

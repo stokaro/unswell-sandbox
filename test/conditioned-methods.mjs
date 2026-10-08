@@ -37,7 +37,7 @@ const controls = [
 ];
 
 function checkLocations(finding, source, a, b) {
-  assert.equal(finding.ruleVersion, "14");
+  assert.equal(finding.ruleVersion, "15");
   assert.equal(Buffer.from(source).subarray(finding.start, finding.end).toString(), a.slice(0, -1));
   assert.equal(finding.related.length, 1);
   const location = finding.related[0];
