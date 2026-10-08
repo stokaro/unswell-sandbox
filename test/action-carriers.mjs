@@ -30,7 +30,7 @@ for (const profile of ["technical", "strict"]) {
     const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
     assert.equal(findings.length, 1, `${profile}: ${text}`);
     const finding = findings[0];
-    assert.equal(finding.ruleVersion, "12");
+    assert.equal(finding.ruleVersion, "13");
     assert.equal(Buffer.from(source).subarray(finding.start, finding.end).toString(), text.slice(0, -1));
     assert.match(finding.message, /unnamed part of logic/);
     assert.match(finding.suggestion, /conditions and limits/);
