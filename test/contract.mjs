@@ -49,8 +49,8 @@ check(
   "ready() offers exactly the two profiles the page shows",
 );
 check(
-  JSON.stringify(info.formats) === JSON.stringify(["markdown", "python"]),
-  "ready() offers exactly the two formats the page shows",
+  JSON.stringify(info.formats) === JSON.stringify(["markdown", "mdx", "python"]),
+  "ready() offers exactly the three formats the page shows",
 );
 
 /* ---------- analyze() returns before the work runs ---------- */

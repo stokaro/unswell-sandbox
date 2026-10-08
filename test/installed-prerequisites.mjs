@@ -37,7 +37,7 @@ for (const profile of ["technical", "strict"]) {
     const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
     assert.equal(findings.length, 1, `${profile}: ${text}`);
     const finding = findings[0];
-    assert.equal(finding.ruleVersion, "14");
+    assert.equal(finding.ruleVersion, "15");
     assert.equal(Buffer.from(source).subarray(finding.start, finding.end).toString(), text.replace(/[.:]$/, ""));
     assert.match(finding.message, /Future and possession auxiliaries/);
     assert.match(finding.suggestion, /required installed state/);
