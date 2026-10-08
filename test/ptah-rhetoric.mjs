@@ -6,7 +6,28 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { boot, repoRoot } from "./harness.mjs";
 
-const book = JSON.parse(await readFile(join(repoRoot, "test/fixtures/ptah-rhetoric.json"), "utf8"));
+const original = await readFile(join(repoRoot, "test/fixtures/ptah-rhetoric.json"));
+const book = JSON.parse(original);
+// Keep the original labels. The supplement names a distinct added appraisal
+// elsewhere in one historical control, with no additional research event credit.
+const supplement = JSON.parse(await readFile(
+  join(repoRoot, "test/fixtures/ptah-rhetoric-expectations-2026-10-08.json"), "utf8",
+));
+assert.equal(supplement.version, 1);
+assert.equal(createHash("sha256").update(original).digest("hex"), supplement.source_book_sha256);
+assert.equal(supplement.reviewer.length > 0, true);
+assert.equal(supplement.status.length > 0, true);
+assert.equal(supplement.additions.length, 1);
+for (const addition of supplement.additions) {
+  const row = book.cases.find((item) => item.id === addition.id);
+  assert.equal(row?.sha256, addition.text_sha256);
+  assert.equal(addition.rationale.length > 0, true);
+  const bytes = Buffer.from(row.text);
+  for (const expected of addition.expected) {
+    assert.equal(bytes.subarray(expected.start, expected.end).toString(), expected.text);
+  }
+  row.expected.push(...addition.expected);
+}
 const runtime = await boot();
 const ids = new Set([
   "filler.document-justification", "filler.evaluative-closure", "repetition.definition-echo", "syntax.slogan-contrast",
@@ -37,8 +58,8 @@ for (const profile of ["technical", "strict"]) {
       assert.deepEqual(revised.findings.filter((finding) => ids.has(finding.ruleId)), [], row.id);
     }
   }
-  assert.equal(count, 9);
-  console.log(`Ptah rhetoric: ${profile}: 9 expected warnings; 12 controls and 9 revisions clear of these rules`);
+  assert.equal(count, 10);
+  console.log(`Ptah rhetoric: ${profile}: 21 frozen cases and 9 revisions verified; one dated appraisal addition`);
 }
 assert.deepEqual(runtime.panics, []);
 console.log(`Ptah rhetoric: passed on ${runtime.info.commit}`);
