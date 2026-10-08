@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-109-g6b5c28ce7ccc",
-  "unswellCommit": "6b5c28ce7ccc043a9833aad85e8b9c38b7296b8f",
-  "unswellCommitDate": "2026-10-08T10:10:55+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-110-gff9f5dc269da",
+  "unswellCommit": "ff9f5dc269da15580b2ea4b9408a29a45857fc98",
+  "unswellCommitDate": "2026-10-08T13:25:21+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-10-08T08:25:12Z",
+  "builtAt": "2026-10-08T11:26:27Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "e37ae9fee18d87ef95a09ac903735d8ec53ef3b9c7536d2f71515d5e02ed36f0",
-    "bytes": 50743127,
-    "gzipBytes": 22404715
+    "sha256": "9cefbb4611593560528e0888c4a81698480c1a3fa11d6a79da343969c8a77134",
+    "bytes": 50773410,
+    "gzipBytes": 22412997
   },
   "rules": [
     {
@@ -60,7 +60,7 @@
     },
     {
       "id": "filler.instruction-scaffolding",
-      "version": "13",
+      "version": "14",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "State the supported action directly; preserve its conditions and optionality."
