@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "source_book_sha256": "5e0381d6da6c6565299b5286e6ac7039142273b0b19ddb0e54a929942401362b",
+  "reviewer": "root Codex assistant under ADR 0041; no independent human annotation",
+  "status": "dated current-runtime expectation supplement; original casebook and labels unchanged",
+  "additions": [
+    {
+      "id": "actual-default-alternative",
+      "text_sha256": "c486f18beffaefcc0686029ded233c75890a6f2f8e8822a08a2af43e4a1ef835",
+      "rationale": "The original engine-selection contrast remains an acceptable technical alternative. The complete historical excerpt also contains a distinct which-is-exactly-the-question appraisal beside the duplicate-index check. Version 12 diagnoses that clause alone and preserves the server response and following namespace explanation. This is the same exposed MySQL construction already credited in whole/p001-d03; no additional event or confirmation credit.",
+      "expected": [
+        {
+          "rule": "filler.evaluative-closure",
+          "text": "which is exactly the question",
+          "start": 7766,
+          "end": 7795
+        }
+      ]
+    }
+  ]
+}

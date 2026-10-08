@@ -7,7 +7,7 @@ SHELL := /bin/sh
 .POSIX:
 .PHONY: wasm pin build-web serve check-site smoke test test-contract test-samples test-frames test-rhetoric test-numbered \
 	test-origin test-numerical-choice test-action-carriers test-installed-prerequisites test-conditioned-methods \
-	test-usefulness-purpose test-mdx-source test-promotional-degree typecheck test-unit ui-probe dev-tree clean
+	test-usefulness-purpose test-mdx-source test-promotional-degree test-discourse-stance typecheck test-unit ui-probe dev-tree clean
 
 # wasm builds web/vendor/unswell/{unswell.wasm,wasm_exec.js,manifest.json}.
 wasm:
@@ -47,7 +47,7 @@ check-site:
 # test drives the real binary outside a browser: the host contract, sample
 # documents, and construction regressions through the real rule catalog. It needs
 # web/vendor/unswell/unswell.wasm, so run `make wasm` first if Go source moved.
-test: test-unit test-contract test-samples test-origin test-frames test-rhetoric test-numbered test-numerical-choice test-action-carriers test-installed-prerequisites test-conditioned-methods test-usefulness-purpose test-mdx-source test-promotional-degree
+test: test-unit test-contract test-samples test-origin test-frames test-rhetoric test-numbered test-numerical-choice test-action-carriers test-installed-prerequisites test-conditioned-methods test-usefulness-purpose test-mdx-source test-promotional-degree test-discourse-stance
 
 # test-contract exercises the host boundary itself: ready(), one analysis, a
 # refused concurrent analysis, a rejected format and a rejected profile.
@@ -101,6 +101,10 @@ test-mdx-source:
 # Keep qualitative degree and ranking advice safe in every browser source format.
 test-promotional-degree:
 	node test/promotional-degree.mjs
+
+# Keep an appraisal separate from its operational explanation and constraints.
+test-discourse-stance:
+	node test/discourse-stance.mjs
 
 # test-unit is the renderer's arithmetic: UTF-8 byte offsets onto UTF-16
 # indices, and the score bands. No wasm and no browser.
