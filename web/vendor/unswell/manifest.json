@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-111-g9b05f1191c94",
-  "unswellCommit": "9b05f1191c94503c91b4a3d8070748c9460a002a",
-  "unswellCommitDate": "2026-10-08T16:42:21+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-112-gc7bd003d12f7",
+  "unswellCommit": "c7bd003d12f78ee23187f4c8b650a43dfe744f4b",
+  "unswellCommitDate": "2026-10-08T19:26:10+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-10-08T15:13:11Z",
+  "builtAt": "2026-10-08T17:30:18Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "2b14c71207e863e176cb559526b56d79afd30d8cc8a403af1bd9d5de477aa9ab",
-    "bytes": 50786393,
-    "gzipBytes": 22417692
+    "sha256": "817ea192b994f2b6dc435442b234bc06622f657c26a4a4a8eb226bcefef32b56",
+    "bytes": 50816111,
+    "gzipBytes": 22422013
   },
   "rules": [
     {
@@ -109,7 +109,7 @@
     },
     {
       "id": "filler.unscoped-assurance",
-      "version": "9",
+      "version": "10",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "State the behavior, scope or evidence behind this quality claim."
