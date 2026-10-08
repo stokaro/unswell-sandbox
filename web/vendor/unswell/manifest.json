@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-112-gc7bd003d12f7",
-  "unswellCommit": "c7bd003d12f78ee23187f4c8b650a43dfe744f4b",
-  "unswellCommitDate": "2026-10-08T19:26:10+02:00",
+  "unswellVersion": "v0.1.0-alpha.4-113-g8a56d13f2ac0",
+  "unswellCommit": "8a56d13f2ac0432dc1704e12453c4973290ff3a9",
+  "unswellCommitDate": "2026-10-08T21:49:58+02:00",
   "goVersion": "go1.27.1",
-  "builtAt": "2026-10-08T17:30:18Z",
+  "builtAt": "2026-10-08T19:55:42Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "817ea192b994f2b6dc435442b234bc06622f657c26a4a4a8eb226bcefef32b56",
-    "bytes": 50816111,
-    "gzipBytes": 22422013
+    "sha256": "5e39b8da187bea426b79599da305c6070f85162be15515d35d88aeeaa862542a",
+    "bytes": 50848323,
+    "gzipBytes": 22427477
   },
   "rules": [
     {
@@ -53,7 +53,7 @@
     },
     {
       "id": "filler.evaluative-closure",
-      "version": "11",
+      "version": "12",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "This clause announces information or endorses a result; state the information directly."
