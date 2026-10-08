@@ -146,13 +146,11 @@ func validProfile(profile string) bool {
 
 // supportedFormats are the input syntaxes the page offers.
 //
-// The engine supports eighteen; the page offers two, because every format needs
-// a sample, a document font and a legend line of its own, and a select box of
-// eighteen syntaxes is not the point of the page. Both names are
-// document.Format constants rather than strings, so a rename upstream fails
-// this build instead of the visitor's analysis.
+// Markdown and MDX use the prose view; Python uses the code view. Each format
+// has a sample and an explicit extraction boundary. Names come from
+// document.Format constants so a rename upstream fails the build.
 func supportedFormats() []any {
-	return []any{string(document.Markdown), string(document.Python)}
+	return []any{string(document.Markdown), string(document.MDX), string(document.Python)}
 }
 
 // parseFormat maps a name from the host onto a document.Format, refusing

@@ -6,7 +6,8 @@ SHELL := /bin/sh
 
 .POSIX:
 .PHONY: wasm pin build-web serve check-site smoke test test-contract test-samples test-frames test-rhetoric test-numbered \
-	test-origin test-numerical-choice test-action-carriers test-installed-prerequisites test-conditioned-methods typecheck test-unit ui-probe dev-tree clean
+	test-origin test-numerical-choice test-action-carriers test-installed-prerequisites test-conditioned-methods \
+	test-usefulness-purpose test-mdx-source typecheck test-unit ui-probe dev-tree clean
 
 # wasm builds web/vendor/unswell/{unswell.wasm,wasm_exec.js,manifest.json}.
 wasm:
@@ -43,10 +44,10 @@ serve:
 check-site:
 	node web/scripts/check-site.mjs --root web
 
-# test drives the real binary outside a browser: the host contract, then the
-# three sample documents through the real rule catalog. It needs
+# test drives the real binary outside a browser: the host contract, sample
+# documents, and construction regressions through the real rule catalog. It needs
 # web/vendor/unswell/unswell.wasm, so run `make wasm` first if Go source moved.
-test: test-unit test-contract test-samples test-origin test-frames test-rhetoric test-numbered test-numerical-choice test-action-carriers test-installed-prerequisites test-conditioned-methods
+test: test-unit test-contract test-samples test-origin test-frames test-rhetoric test-numbered test-numerical-choice test-action-carriers test-installed-prerequisites test-conditioned-methods test-usefulness-purpose test-mdx-source
 
 # test-contract exercises the host boundary itself: ready(), one analysis, a
 # refused concurrent analysis, a rejected format and a rejected profile.
@@ -88,6 +89,14 @@ test-installed-prerequisites:
 # Verify both prerequisite and method evidence, preserving the safety qualifier.
 test-conditioned-methods:
 	node test/conditioned-methods.mjs
+
+# Verify both supported-action and possible-purpose clauses without strengthening either.
+test-usefulness-purpose:
+	node test/usefulness-purpose.mjs
+
+# MDX source remains source: analyze prose without executing JavaScript or JSX.
+test-mdx-source:
+	node test/mdx-source.mjs
 
 # test-unit is the renderer's arithmetic: UTF-8 byte offsets onto UTF-16
 # indices, and the score bands. No wasm and no browser.

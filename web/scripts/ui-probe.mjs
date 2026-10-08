@@ -361,6 +361,30 @@ async function main() {
   check(c.clean === true, "the rail says so in words rather than showing an empty list");
   check(c.count.startsWith("0 · "), "the rail header counts zero", c.count);
 
+  /* ---------- MDX mode excludes imports and component syntax ---------- */
+
+  await evaluate('document.querySelector(\'#format-control button[data-value="mdx"]\').click()');
+  check((await evaluate("document.body.dataset.format")) === "mdx",
+    "the format control selects MDX");
+  check((await evaluate('document.getElementById("load-sample").textContent')) ===
+    "Load AI-flavored MDX sample", "the sample button names the MDX sample");
+  check((await evaluate('document.getElementById("legend-code").hidden')) === false,
+    "MDX mode shows the excluded-code legend");
+  await runAndWaitForReport(evaluate, 'document.getElementById("load-sample").click()');
+  const mdx = JSON.parse(await evaluate(`JSON.stringify({
+    rules: [...document.querySelectorAll(".note-rule")].map(e => e.textContent),
+    dim: [...document.querySelectorAll("#report .code-dim")].map(e => e.textContent).join(""),
+    marks: [...document.querySelectorAll("#report .mark")].map(e => e.textContent).join(""),
+    font: getComputedStyle(document.getElementById("report")).fontFamily,
+  })`));
+  check(mdx.rules.length === 1 && mdx.rules[0] === "filler.instruction-scaffolding",
+    "the MDX sample delivers the complete purpose diagnosis");
+  check(mdx.dim.includes("import TracePreview") && mdx.dim.includes("<TracePreview"),
+    "MDX imports and JSX syntax are dimmed");
+  check(mdx.marks.includes("café messages") && mdx.marks.includes("tracing purposes"),
+    "the MDX source mark retains both clauses and Unicode text");
+  check(mdx.font.includes("Crimson Pro"), "MDX retains the prose font", mdx.font);
+
   /* ---------- Python mode dims the code ---------- */
 
   await evaluate(
