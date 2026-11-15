@@ -4,7 +4,7 @@
  * The page shows three things here that a visitor can compare with the tool
  * they install: the index of a Markdown page, what to do at each mark, and the
  * text after the replacements of `unswell fix`. The fixtures under
- * test/fixtures/cli-v0.1.0-alpha.13 are what the published binary wrote for the
+ * test/fixtures/cli-v0.1.0-alpha.14 are what the published binary wrote for the
  * Markdown sample, and every one of the three is compared with them.
  *
  * The words beside a mark are lines of the CLI's own text report, cut out of
@@ -19,12 +19,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { boot, repoRoot } from "./harness.mjs";
 
-const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.13");
+const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.14");
 const read = (path) => readFile(path, "utf8");
 
 const runtime = await boot();
-assert.equal(runtime.info.version, "v0.1.0-alpha.13",
-  "the fixtures are the output of the alpha.13 binary; make them again for another pin");
+assert.equal(runtime.info.version, "v0.1.0-alpha.14",
+  "the fixtures are the output of the alpha.14 binary; make them again for another pin");
 
 const sample = await read(join(repoRoot, "web/samples/ai-flavored.md"));
 const bytes = Buffer.from(sample);
@@ -42,7 +42,8 @@ const about = cliIndex[cliIndex.length - 1];
 // can replace and what it cannot.
 const cliMarks = cliIndex.slice(1, -1).filter((line) => line.startsWith("  playground.md:"));
 const advice = cliIndex.slice(1, -1).filter((line) => !line.startsWith("  "));
-assert.deepEqual(advice.map((line) => line.split(" ")[0]), ["`unswell", "A"], "one line about the command and one about runs");
+assert.deepEqual(advice.map((line) => line.split(" ")[0]), ["`unswell", "A", "Do"],
+  "one line about the command, one about runs, and one about em dashes");
 
 for (const profile of ["technical", "strict"]) {
   const report = await runtime.analyze(sample, profile);
@@ -168,8 +169,9 @@ assert.equal(rhythm.marks[0].note, "16 plain sentences in a row; say it as you w
 assert.equal(rhythm.marks[1].note, "16 sentences in a row open with their subject; open one of them with its condition, its time, or its reason");
 assert.equal(rhythm.fixable, 0);
 assert.equal(rhythm.fixableUnlisted, 0);
-assert.equal(rhythm.advice.length, 1);
+assert.equal(rhythm.advice.length, 2);
 assert.match(rhythm.advice[0], /^A run of sentences has no replacement that a command can make\./);
+assert.match(rhythm.advice[1], /^Do not add an em dash anywhere:/);
 assert.equal(rhythm.summary, "1 run of plain sentences, 1 run of sentences that open with their subject.");
 // The command has nothing to replace on such a page and leaves it as it is.
 const untouchedRhythm = await runtime.fix(even, "technical", "markdown", false);

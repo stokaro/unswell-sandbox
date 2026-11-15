@@ -90,8 +90,8 @@ From a clean build on darwin/arm64 with go1.27.1, at the pin
 | boot to `ready()`, headless Chrome, localhost | ~560 ms |
 | one analysis of the AI-flavored sample | 150–190 ms |
 
-The current build is `v0.1.0-alpha.13` with 60 rules. Its WASM is 59,296,674
-bytes raw and 24,187,423 bytes with `gzip -9`, built with go1.27.3 on
+The current build is `v0.1.0-alpha.14` with 60 rules. Its WASM is 59,296,631
+bytes raw and 24,187,136 bytes with `gzip -9`, built with go1.27.3 on
 darwin/arm64. About 7 MB of the raw size, 1.4 MB compressed, is the CLI's
 report package, which the page links to print the CLI's own words at each mark
 of the AI-sounding index. The timing figures above describe the earlier
@@ -248,8 +248,8 @@ Three parts of this are the CLI's, by construction rather than by copy:
 - **The words** come from the CLI's text report. `index.go` renders the
   completed result with `report.Write` and cuts the index block out of it: the
   counts, one line for each mark (`em dash; write a comma`), the lines about
-  what a command can replace and what it cannot, and the sentence about what
-  the index is. The report lists 60
+  what a command can replace and what it cannot, the line that says not to
+  add an em dash, and the sentence about what the index is. The report lists 60
   marks in one run and says how many it left out; the rail lists the same 60
   and repeats that sentence. All located marks, up to the engine's 200 on one
   page, are still drawn in the document.
@@ -263,7 +263,7 @@ follows it step by step, together with the line `unswell fix` prints for a
 page.
 
 `test/ai-sounding.mjs` holds both to the published binary. The files in
-`test/fixtures/cli-v0.1.0-alpha.13` are what that binary printed and wrote for
+`test/fixtures/cli-v0.1.0-alpha.14` are what that binary printed and wrote for
 the Markdown sample, and the test requires the same index, the same line at
 every mark, the same fixed text byte for byte, and the same summary line. A
 pin that changes any of them fails the build until the fixtures are made
