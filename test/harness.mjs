@@ -110,6 +110,18 @@ export async function boot() {
       call(runId, text, profile, format);
       return { runId, settled };
     },
+    /** Runs one fix and resolves with the parsed payload, whose kind is "fix". */
+    fix(text, profile = "technical", format = "markdown", includeLow = false) {
+      const runId = ++nextRun;
+      const settled = new Promise((res, rej) => pending.set(runId, { resolve: res, reject: rej }));
+      insideAnalyze = true;
+      try {
+        globalThis.__unswell.fix(runId, text, profile, format, includeLow);
+      } finally {
+        insideAnalyze = false;
+      }
+      return settled;
+    },
     cancel(runId) {
       globalThis.__unswell.cancel(runId);
     },

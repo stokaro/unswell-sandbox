@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Playground — Unswell</title>
-<meta name="description" content="Paste English prose or Python and see what the Unswell rule catalog marks, in your browser tab. The same engine as the CLI, compiled to WebAssembly. The text never leaves the page.">
+<meta name="description" content="Paste English prose or Python and see what the Unswell rule catalog marks, in your browser tab. A Markdown page also gets its AI-sounding index, and one button makes the replacements of unswell fix. The same engine as the CLI, compiled to WebAssembly. The text never leaves the page.">
 <link rel="canonical" href="https://play.unswell.dev/">
 <!--
   The page ships no inline script, so script-src needs no hash and nothing
@@ -46,7 +46,9 @@
     <div class="intro-text">
       <h1>Paste a paragraph. Watch the residue surface.</h1>
       <p>The same rule catalog as the CLI, compiled to WebAssembly and run on
-      this page. Your text stays in the tab.</p>
+      this page. A Markdown page also gets its AI-sounding index, and one
+      button makes the replacements of <code>unswell fix</code>. Your text
+      stays in the tab.</p>
     </div>
 
     <!--
@@ -119,6 +121,7 @@
     <span class="swatch swatch-forbid">forbid</span>
     <span class="swatch swatch-warning">warning</span>
     <span class="swatch swatch-info">info</span>
+    <span class="swatch swatch-ai">index mark</span>
     <span class="legend-code" id="legend-code" hidden>code · never checked; comments and strings are</span>
     <span class="legend-spacer"></span>
     <span class="legend-note">Not an authorship detector. A finding is about the wording, whoever typed it.</span>

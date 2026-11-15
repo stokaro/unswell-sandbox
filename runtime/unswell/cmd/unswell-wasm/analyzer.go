@@ -10,6 +10,7 @@ import (
 	"syscall/js"
 	"time"
 
+	"github.com/stokaro/unswell"
 	"github.com/stokaro/unswell/document"
 )
 
@@ -46,6 +47,7 @@ func newAnalyzer(h *host, engines *engineSet) *analyzer {
 func (a *analyzer) install() {
 	js.Global().Set(runtimeGlobal, js.ValueOf(map[string]any{
 		"analyze": js.FuncOf(a.jsAnalyze),
+		"fix":     js.FuncOf(a.jsFix),
 		"cancel":  js.FuncOf(a.jsCancel),
 	}))
 }
@@ -82,7 +84,46 @@ func (a *analyzer) jsAnalyze(_ js.Value, args []js.Value) any {
 		a.refuse(runID, "the fourth argument must be a format name, as a string")
 		return nil
 	}
-	a.start(runID, text, profile, format)
+	a.start(runID, func(ctx context.Context) { a.execute(ctx, runID, text, profile, format) })
+	return nil
+}
+
+// jsFix implements __unswell.fix(runId, text, profile, format, includeLow).
+//
+// It answers through the same result() as an analysis, with a payload whose
+// kind is "fix": the text after the replacements `unswell fix` makes. It is a
+// run like any other, so it is refused while another one is in flight and it
+// can be canceled.
+func (a *analyzer) jsFix(_ js.Value, args []js.Value) any {
+	defer a.recoverCallback("fix")
+
+	runID, ok := argInt(args, 0)
+	if !ok {
+		a.host.reportPanic(fmt.Sprintf(
+			"unswell-wasm: %s.fix: the first argument must be a run id number", runtimeGlobal))
+		return nil
+	}
+	text, ok := argString(args, 1)
+	if !ok {
+		a.refuse(runID, "the second argument must be the text to fix, as a string")
+		return nil
+	}
+	profile, ok := argString(args, 2)
+	if !ok {
+		a.refuse(runID, "the third argument must be a profile name, as a string")
+		return nil
+	}
+	format, ok := argString(args, 3)
+	if !ok {
+		a.refuse(runID, "the fourth argument must be a format name, as a string")
+		return nil
+	}
+	if len(args) <= 4 || args[4].Type() != js.TypeBoolean {
+		a.refuse(runID, "the fifth argument must say whether a page at the level low is fixed too, as a boolean")
+		return nil
+	}
+	includeLow := args[4].Bool()
+	a.start(runID, func(ctx context.Context) { a.executeFix(ctx, runID, text, profile, format, includeLow) })
 	return nil
 }
 
@@ -113,7 +154,7 @@ func (a *analyzer) jsCancel(_ js.Value, args []js.Value) any {
 }
 
 // start accepts a run, or refuses it because one is already in flight.
-func (a *analyzer) start(runID int, text, profile, format string) {
+func (a *analyzer) start(runID int, run func(ctx context.Context)) {
 	a.mu.Lock()
 	if a.active != nil {
 		busy := a.active.id
@@ -126,7 +167,7 @@ func (a *analyzer) start(runID int, text, profile, format string) {
 	a.active = &activeRun{id: runID, cancel: cancel}
 	a.mu.Unlock()
 
-	a.spawn(func() { a.execute(ctx, runID, text, profile, format) })
+	a.spawn(func() { run(ctx) })
 }
 
 // spawn runs fn after the JavaScript call that asked for it has returned.
@@ -179,33 +220,11 @@ func (a *analyzer) refuse(runID int, message string) {
 // execute analyzes one document to completion. It runs on its own goroutine;
 // see [analyzer.jsAnalyze].
 func (a *analyzer) execute(ctx context.Context, runID int, text, profile, format string) {
-	defer func() {
-		if recovered := recover(); recovered != nil {
-			// The engine returns operational failures as errors, so reaching
-			// here means the fault was outside it -- in this package, or in the
-			// host boundary. It is reported as a fault and the run is still
-			// completed, so the page is not left waiting.
-			safely(func() { a.host.failed(runID, fmt.Sprintf("unswell-wasm: internal error: %v", recovered)) })
-			a.host.reportPanic(fmt.Sprintf("run %d: %v\n\n%s", runID, recovered, debug.Stack()))
-		}
-		a.finish(runID)
-	}()
+	defer a.conclude(runID)
 
-	syntax, err := parseFormat(format)
-	if err != nil {
-		a.host.failed(runID, "unswell-wasm: "+err.Error())
+	engine, source, ok := a.prepare(runID, text, profile, format)
+	if !ok {
 		return
-	}
-	engine, err := a.engines.engine(profile)
-	if err != nil {
-		a.host.failed(runID, "unswell-wasm: "+err.Error())
-		return
-	}
-
-	source := document.Source{
-		Name:   defaultSourceName + extensionFor(syntax),
-		Format: syntax,
-		Bytes:  []byte(text),
 	}
 
 	started := time.Now()
@@ -230,6 +249,66 @@ func (a *analyzer) execute(ctx context.Context, runID int, text, profile, format
 		return
 	}
 	a.host.result(runID, encoded)
+}
+
+// executeFix fixes one page to completion and answers with the new text. It
+// runs on its own goroutine, like [analyzer.execute].
+func (a *analyzer) executeFix(ctx context.Context, runID int, text, profile, format string, includeLow bool) {
+	defer a.conclude(runID)
+
+	engine, source, ok := a.prepare(runID, text, profile, format)
+	if !ok {
+		return
+	}
+	fixed, err := fixPage(ctx, engine, source, includeLow)
+	if err != nil {
+		if ctx.Err() != nil {
+			a.host.failed(runID, "canceled")
+			return
+		}
+		a.host.failed(runID, err.Error())
+		return
+	}
+	encoded, err := fixed.encode()
+	if err != nil {
+		a.host.failed(runID, "unswell-wasm: "+err.Error())
+		return
+	}
+	a.host.result(runID, encoded)
+}
+
+// prepare resolves the engine and the source of one run. On a refusal it has
+// already told the host, and the caller returns.
+func (a *analyzer) prepare(runID int, text, profile, format string) (*unswell.Engine, document.Source, bool) {
+	syntax, err := parseFormat(format)
+	if err != nil {
+		a.host.failed(runID, "unswell-wasm: "+err.Error())
+		return nil, document.Source{}, false
+	}
+	engine, err := a.engines.engine(profile)
+	if err != nil {
+		a.host.failed(runID, "unswell-wasm: "+err.Error())
+		return nil, document.Source{}, false
+	}
+	return engine, document.Source{
+		Name:   defaultSourceName + extensionFor(syntax),
+		Format: syntax,
+		Bytes:  []byte(text),
+	}, true
+}
+
+// conclude ends one run: it reports a fault that escaped the run, and frees
+// the runtime for the next one. It is deferred, so it recovers.
+func (a *analyzer) conclude(runID int) {
+	if recovered := recover(); recovered != nil {
+		// The engine returns operational failures as errors, so reaching
+		// here means the fault was outside it -- in this package, or in the
+		// host boundary. It is reported as a fault and the run is still
+		// completed, so the page is not left waiting.
+		safely(func() { a.host.failed(runID, fmt.Sprintf("unswell-wasm: internal error: %v", recovered)) })
+		a.host.reportPanic(fmt.Sprintf("run %d: %v\n\n%s", runID, recovered, debug.Stack()))
+	}
+	a.finish(runID)
 }
 
 func (a *analyzer) finish(runID int) {

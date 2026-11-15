@@ -6,16 +6,28 @@
  * found; they are two views of one array.
  */
 
-import type { Finding, Report } from "./protocol.ts";
-import { band, formatScore, severityOf } from "./render.ts";
+import type { AISounding, Finding, FixResult, IndexMark, Report } from "./protocol.ts";
+import { band, formatScore, indexMarkId, listsIndexMarks, severityOf } from "./render.ts";
 
 export interface RailHandles {
-  /** Every note element, by finding id. */
+  /** Every note element, by finding id or by the id of a mark of the index. */
   notes: Map<string, HTMLElement>;
 }
 
-/** Draws the two stat cards and one card per finding. */
-export function renderRail(body: HTMLElement, report: Report): RailHandles {
+/**
+ * What the rail says about a fix: the answer of the engine, and whether the
+ * text on screen is the fixed one, which is when it can be undone.
+ */
+export interface FixNote {
+  fix: FixResult;
+  undoable: boolean;
+}
+
+/**
+ * Draws the two stat cards, the AI-sounding index, one card per finding, and
+ * the marks of the index.
+ */
+export function renderRail(body: HTMLElement, report: Report, fixNote: FixNote | null = null): RailHandles {
   body.replaceChildren();
   const notes = new Map<string, HTMLElement>();
 
@@ -24,6 +36,15 @@ export function renderRail(body: HTMLElement, report: Report): RailHandles {
   const unavailable = renderOriginNotice(report);
   if (unavailable) body.append(unavailable);
 
+  if (fixNote) body.append(renderFixNote(fixNote));
+  body.append(renderIndex(report));
+
+  renderFindings(body, report, notes);
+  renderIndexMarks(body, report, notes);
+  return { notes };
+}
+
+function renderFindings(body: HTMLElement, report: Report, notes: Map<string, HTMLElement>): void {
   if (report.findings.length === 0) {
     const clean = document.createElement("div");
     clean.className = "note-clean";
@@ -40,7 +61,7 @@ export function renderRail(body: HTMLElement, report: Report): RailHandles {
           `${report.document.sentences} sentence(s). No enabled rule reported a finding.`;
     clean.append(headline, detail);
     body.append(clean);
-    return { notes };
+    return;
   }
 
   report.findings.forEach((finding, index) => {
@@ -48,8 +69,171 @@ export function renderRail(body: HTMLElement, report: Report): RailHandles {
     notes.set(finding.id, note);
     body.append(note);
   });
+}
 
-  return { notes };
+/* ---------------------------------------------------------------------------
+ * The AI-sounding index
+ * ------------------------------------------------------------------------ */
+
+/**
+ * The card of the AI-sounding index.
+ *
+ * The number, the level and the counts are the engine's, and the sentences are
+ * the CLI's: `summary`, `advice` and `about` are lines of the text report for
+ * this result. The card adds one thing of its own, the button, which runs the
+ * same replacements `unswell fix` makes.
+ */
+function renderIndex(report: Report): HTMLElement {
+  const card = document.createElement("div");
+  card.className = "index-card";
+  card.append(label("AI-sounding index"));
+
+  const index = report.aiSounding;
+  if (!index || index.status !== "available") {
+    card.dataset.level = "none";
+    card.append(line("index-value", "no index"), line("index-detail", missingIndex(report, index)));
+    return card;
+  }
+
+  card.dataset.level = index.level ?? "low";
+  const head = document.createElement("div");
+  head.className = "index-head";
+  head.append(line("index-value", `${index.index} / 100`), line("index-level", index.level ?? ""));
+  const track = document.createElement("div");
+  track.className = "stat-track";
+  const fill = document.createElement("div");
+  fill.className = "index-fill";
+  fill.style.width = `${Math.max(0, Math.min(100, index.index))}%`;
+  track.append(fill);
+  card.append(head, track);
+
+  card.append(line("index-detail", `${index.words} prose words: ${index.summary ?? countSignals(index)}`));
+
+  const low = !listsIndexMarks(report);
+  if (low && index.counted > 0) {
+    card.append(line(
+      "index-detail",
+      "At the level low the check lists no marks, and `unswell fix` leaves the page as it is.",
+    ));
+  }
+  if (index.fixable > 0) {
+    const fix = document.createElement("button");
+    fix.type = "button";
+    fix.className = low ? "btn index-fix" : "btn btn-primary index-fix";
+    fix.dataset.action = low ? "fix-low" : "fix";
+    fix.textContent = low
+      ? "Replace them anyway (--include-low)"
+      : `Fix ${index.fixable} mark${index.fixable === 1 ? "" : "s"}`;
+    fix.title = "Makes the replacements `unswell fix` makes. No model is called.";
+    card.append(fix);
+  }
+  if (index.advice && !low) card.append(line("index-detail", index.advice));
+  if (index.about) card.append(line("index-about", index.about));
+  return card;
+}
+
+/** Why a text has no index, in the terms the engine and the CLI use. */
+function missingIndex(report: Report, index: AISounding | undefined): string {
+  if (!index) {
+    return "The index is measured on Markdown pages. This text was read as " +
+      `${report.format === "mdx" ? "MDX" : report.format}.`;
+  }
+  if (index.status === "too_short") {
+    return `${index.words} prose words. The index covers a Markdown page of 150 prose words or more.`;
+  }
+  return `The engine reported ${index.status}.`;
+}
+
+/** The counts by signal, for a report that came without the CLI's own line. */
+function countSignals(index: AISounding): string {
+  const counted = index.signals.filter((signal) => signal.count > 0);
+  if (counted.length === 0) return "none of its marks.";
+  return counted.map((signal) => `${signal.count} ${signal.name}`).join(", ") + ".";
+}
+
+/**
+ * What the last fix did, in the line `unswell fix` prints for a page.
+ *
+ * It stays above the index for as long as the text on screen is the one the
+ * fix produced, because that is the text the two numbers describe.
+ */
+function renderFixNote(note: FixNote): HTMLElement {
+  const card = document.createElement("div");
+  card.className = "note-fix";
+  const headline = document.createElement("div");
+  const command = document.createElement("strong");
+  command.textContent = "unswell fix";
+  headline.append(command, document.createTextNode(` ${note.fix.summary}`));
+  card.append(headline);
+  if (note.fix.changed) card.append(line("note-fix-caution", note.fix.caution));
+  if (note.undoable) {
+    const undo = document.createElement("button");
+    undo.type = "button";
+    undo.className = "btn index-fix";
+    undo.dataset.action = "undo-fix";
+    undo.textContent = "Undo the fix";
+    card.append(undo);
+  }
+  return card;
+}
+
+/**
+ * The marks of the index, one compact note each, in the words of the CLI.
+ *
+ * Only the marks the CLI's report lists get a note. The report bounds its
+ * list, says how many it left out, and the rail repeats that sentence instead
+ * of inventing words for the rest. Every located mark is still drawn in the
+ * document.
+ */
+function renderIndexMarks(body: HTMLElement, report: Report, notes: Map<string, HTMLElement>): void {
+  if (!listsIndexMarks(report)) return;
+  const index = report.aiSounding!;
+  const listed = index.marks
+    .map((mark, position) => ({ mark, position }))
+    .filter(({ mark }) => mark.note !== undefined && mark.note !== "");
+  if (listed.length === 0) return;
+
+  const heading = document.createElement("div");
+  heading.className = "rail-section";
+  heading.textContent = `Marks of the index · ${index.counted}`;
+  body.append(heading);
+
+  for (const { mark, position } of listed) {
+    const note = renderIndexMark(mark, position);
+    notes.set(indexMarkId(position), note);
+    body.append(note);
+  }
+  if (index.unlisted) body.append(line("rail-unlisted", index.unlisted));
+}
+
+function renderIndexMark(mark: IndexMark, position: number): HTMLElement {
+  const note = document.createElement("button");
+  note.type = "button";
+  note.className = "note note-ai";
+  note.dataset.finding = indexMarkId(position);
+
+  const place = document.createElement("span");
+  place.className = "note-rule";
+  place.textContent = `${mark.line}:${mark.column}`;
+
+  const message = document.createElement("span");
+  message.className = "note-ai-text";
+  message.textContent = mark.note ?? mark.signal;
+
+  note.append(place, message);
+  note.setAttribute(
+    "aria-label",
+    `Mark of the AI-sounding index at line ${mark.line}, column ${mark.column}: ${mark.note ?? mark.signal}. ` +
+      "Show it in the text.",
+  );
+  return note;
+}
+
+function line(className: string, text: string): HTMLElement {
+  const element = document.createElement("div");
+  element.className = className;
+  element.textContent = text;
+  return element;
 }
 
 /**

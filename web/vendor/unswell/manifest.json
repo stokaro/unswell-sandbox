@@ -3,7 +3,7 @@
   "unswellCommit": "4109f062209064e3535792c7245de77d3d808954",
   "unswellCommitDate": "2026-11-14T18:10:55+01:00",
   "goVersion": "go1.27.3",
-  "builtAt": "2026-11-15T00:03:56Z",
+  "builtAt": "2026-11-15T00:16:17Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "d3c6a0a887a22f4a28d3a5be2c38822217777a0d7315500246a5665a34bfa54b",
-    "bytes": 52211021,
-    "gzipBytes": 22786493
+    "sha256": "2336947d68b5c6f00f88694a354385f762c428f403e4a09ac01965d39b70ad3a",
+    "bytes": 59266149,
+    "gzipBytes": 24181443
   },
   "rules": [
     {

@@ -86,6 +86,11 @@ check(
   "a finding under a heading carries that heading as its context",
 );
 check(typeof sample.gate.passed === "boolean", "the report carries the gate decision");
+check(sample.kind === "report", "an analysis answers with a report");
+check(
+  sample.aiSounding?.status === "too_short" && sample.aiSounding.words > 0,
+  "a short Markdown page carries the engine's reason for no AI-sounding index",
+);
 check(
   sample.engine.version !== "" && sample.engine.scoringProfile !== "",
   "the report carries the engine identity it was produced by",
@@ -118,6 +123,15 @@ for (const [label, args] of [
   );
   check(message.startsWith("unswell-wasm:"), `${label} comes back as a failure: ${message}`);
 }
+
+/* ---------- fix() answers on the same channel ---------- */
+
+const fixed = await runtime.fix("# Title\n\nThe client opens — and closes — connections.\n");
+check(fixed.kind === "fix", "a fix answers through result() with a payload of its own kind");
+check(
+  fixed.indexed === false && fixed.changed === false && fixed.text.includes("—"),
+  "a page too short for the index is returned as it was",
+);
 
 // And the runtime is still alive after all of that.
 const after = await runtime.analyze("It is important to note that the client opens connections.");

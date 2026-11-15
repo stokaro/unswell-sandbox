@@ -1,0 +1,4 @@
+playground.md: AI-sounding index 100 -> 66; removed 5 em dashes, 1 emoji in a heading, 1 emoji at the start of a list item, 2 arrows, 3 bold labels. Left for you: 7 stock words.
+12 marks removed in 1 page of 1 document.
+Written to 1 file. Review the change before you keep it.
+A replacement is mechanical. Read each one: a comma or a period is not always what the sentence needs, and a stock word needs your own words.

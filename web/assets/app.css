@@ -116,6 +116,10 @@
   --warning-tint: #fbefd3;
   --info: #1f6f73;
   --info-tint: #e3eef0;
+  /* The marks of the AI-sounding index. A fourth color, because they are not a
+     fourth severity: they come from the page index, not from a rule. */
+  --index: #5d4a8f;
+  --index-tint: #ebe6f6;
   --pass: #2e7d4f;
   --inert: #b8c0bd;
   --dim: #8a9391;
@@ -289,6 +293,11 @@ a {
   font-size: 17px;
   line-height: 1.5;
   color: var(--muted);
+}
+
+.intro code {
+  font-family: var(--mono);
+  font-size: 0.88em;
 }
 
 .engine {
@@ -729,6 +738,20 @@ body[data-format="python"] .report {
   text-decoration-line: none;
 }
 
+/* A mark of the AI-sounding index: one dash, one emoji, one word. It is filled
+   and underlined, because most of them are a single character and a tint alone
+   would be lost in a line of text. It carries no number; the rail lists it by
+   its line and column. */
+.mark-ai {
+  background: var(--index-tint);
+  box-shadow: inset 0 -1.5px 0 var(--index);
+}
+
+.mark-ai.is-active {
+  background: var(--index);
+  box-shadow: 0 0 0 2px var(--index);
+}
+
 /* The scanning sweep, over the pane while the engine is working. */
 .sweep {
   position: absolute;
@@ -859,6 +882,118 @@ body[data-format="python"] .report {
 .stat-fill[data-band="mid"] { background: var(--warning); }
 .stat-fill[data-band="high"] { background: var(--forbid); }
 
+/* The AI-sounding index. One card under the stats: the number, its level, the
+   counts in the CLI's words, and the button that makes the replacements. */
+.index-card {
+  background: var(--card);
+  border: 1px solid var(--border-light);
+  border-radius: 5px;
+  padding: 10px 11px 11px;
+  margin-bottom: 14px;
+}
+
+.index-head {
+  margin-top: 3px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.index-value {
+  font-size: 15px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.index-card[data-level="none"] .index-value {
+  margin-top: 3px;
+  color: var(--faint);
+}
+
+.index-level {
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--faint);
+}
+
+.index-card[data-level="low"] .index-level { color: var(--pass); }
+.index-card[data-level="elevated"] .index-level { color: var(--warning); }
+.index-card[data-level="high"] .index-level { color: var(--forbid); }
+
+.index-fill {
+  height: 100%;
+  background: var(--inert);
+}
+
+.index-card[data-level="low"] .index-fill { background: var(--pass); }
+.index-card[data-level="elevated"] .index-fill { background: var(--warning); }
+.index-card[data-level="high"] .index-fill { background: var(--forbid); }
+
+.index-detail {
+  margin-top: 7px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.index-about {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-light);
+  font-size: 11px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
+.index-fix {
+  margin-top: 9px;
+}
+
+/* What the last fix did. Tinted like the marks it removed, so the line reads
+   as the answer to the button rather than as another finding. */
+.note-fix {
+  background: var(--index-tint);
+  border: 1px solid var(--index);
+  border-radius: 5px;
+  padding: 10px 11px 11px;
+  margin-bottom: 8px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.note-fix strong {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--index);
+}
+
+.note-fix-caution {
+  margin-top: 6px;
+  color: var(--muted);
+}
+
+.rail-section {
+  margin: 16px 0 8px;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.rail-unlisted {
+  margin: 2px 0 8px;
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--faint);
+}
+
 .note {
   width: 100%;
   display: grid;
@@ -887,6 +1022,26 @@ body[data-format="python"] .report {
 .note-forbid.is-active { color: var(--forbid); }
 .note-warning.is-active { color: var(--warning); }
 .note-info.is-active { color: var(--info); }
+.note-ai.is-active { color: var(--index); }
+
+/* A mark of the index is one line: where it is, and what the CLI says to do. */
+.note-ai {
+  padding: 7px 11px;
+  margin-bottom: 5px;
+  align-items: baseline;
+}
+
+.note-ai .note-rule {
+  color: var(--index);
+  font-variant-numeric: tabular-nums;
+}
+
+.note-ai-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
 
 .note-badge {
   grid-row: 1 / span 3;
@@ -1021,6 +1176,8 @@ body[data-format="python"] .report {
 .swatch-warning::before { background: var(--warning-tint); box-shadow: inset 0 0 0 1px var(--warning); }
 .swatch-info { color: var(--info); }
 .swatch-info::before { background: var(--info-tint); box-shadow: inset 0 0 0 1px var(--info); }
+.swatch-ai { color: var(--index); }
+.swatch-ai::before { background: var(--index-tint); box-shadow: inset 0 -2px 0 var(--index); }
 
 .legend-code {
   color: var(--dim);
