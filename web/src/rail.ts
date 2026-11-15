@@ -107,27 +107,31 @@ function renderIndex(report: Report): HTMLElement {
   track.append(fill);
   card.append(head, track);
 
+  card.append(line("index-readings", `marks ${index.marksReading} · rhythm ${index.rhythmReading}`));
   card.append(line("index-detail", `${index.words} prose words: ${index.summary ?? countSignals(index)}`));
 
-  const low = !listsIndexMarks(report);
-  if (low && index.counted > 0) {
+  // The marks with a replacement belong to the first reading. When that
+  // reading is low the engine lists none of them and `unswell fix` leaves the
+  // page as it is, also on a page that is high by its rhythm.
+  const unlisted = index.fixable === 0 && index.fixableUnlisted > 0;
+  if (unlisted) {
     card.append(line(
       "index-detail",
-      "At the level low the check lists no marks, and `unswell fix` leaves the page as it is.",
+      "The marks with a replacement are at the level low: the check lists none of them, and `unswell fix` leaves the page as it is.",
     ));
   }
-  if (index.fixable > 0) {
+  if (index.fixable > 0 || unlisted) {
     const fix = document.createElement("button");
     fix.type = "button";
-    fix.className = low ? "btn index-fix" : "btn btn-primary index-fix";
-    fix.dataset.action = low ? "fix-low" : "fix";
-    fix.textContent = low
+    fix.className = unlisted ? "btn index-fix" : "btn btn-primary index-fix";
+    fix.dataset.action = unlisted ? "fix-low" : "fix";
+    fix.textContent = unlisted
       ? "Replace them anyway (--include-low)"
       : `Fix ${index.fixable} mark${index.fixable === 1 ? "" : "s"}`;
     fix.title = "Makes the replacements `unswell fix` makes. No model is called.";
     card.append(fix);
   }
-  if (index.advice && !low) card.append(line("index-detail", index.advice));
+  for (const advice of index.advice ?? []) card.append(line("index-detail", advice));
   if (index.about) card.append(line("index-about", index.about));
   return card;
 }
@@ -196,6 +200,7 @@ function renderIndexMarks(body: HTMLElement, report: Report, notes: Map<string, 
   const heading = document.createElement("div");
   heading.className = "rail-section";
   heading.textContent = `Marks of the index · ${index.counted}`;
+  heading.title = "The marks of each reading that is above the level low.";
   body.append(heading);
 
   for (const { mark, position } of listed) {

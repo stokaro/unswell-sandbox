@@ -56,7 +56,8 @@ const fixCaution = "A replacement is mechanical. Read each one: a comma or a per
 
 // fixPage analyzes the page, applies the fixes of its marks, and analyzes the
 // result again until no fix is left. A page that starts at the level low is
-// left as it is unless includeLow is set: the check lists no marks there.
+// left as it is unless includeLow is set: the check lists no marks there. Low
+// is the level of the first reading, whose marks have a replacement.
 func fixPage(ctx context.Context, engine *unswell.Engine, source document.Source, includeLow bool) (fixPayload, error) {
 	started := time.Now()
 	out := fixPayload{Kind: "fix", Name: source.Name, Removed: map[string]int{}, Left: map[string]int{}, Caution: fixCaution}
@@ -72,7 +73,9 @@ func fixPage(ctx context.Context, engine *unswell.Engine, source document.Source
 		}
 		if pass == 0 {
 			out.Indexed, out.Before = true, index.Index
-			out.LeftLow = index.Level == unswell.AISoundingLow && !includeLow
+			// The check lists the marks of a reading that is above the low
+			// level, and the marks with a replacement are the first reading's.
+			out.LeftLow = unswell.AILevel(index.Reading(unswell.AIReadingMarks)) == unswell.AISoundingLow && !includeLow
 		}
 		out.After = index.Index
 		if out.LeftLow {
@@ -80,7 +83,7 @@ func fixPage(ctx context.Context, engine *unswell.Engine, source document.Source
 		}
 		revised, applied := unswell.RemoveAIMarks(current.Bytes, index.Marks)
 		if applied == 0 || pass == maxFixPasses {
-			out.Left = markCounts(index.Marks, false)
+			out.Left = markCounts(leftMarks(index, includeLow), false)
 			break
 		}
 		for name, count := range markCounts(index.Marks, true) {
@@ -93,6 +96,16 @@ func fixPage(ctx context.Context, engine *unswell.Engine, source document.Source
 	out.Summary = fixSummary(out)
 	out.DurationMs = time.Since(started).Milliseconds()
 	return out, nil
+}
+
+// leftMarks returns the marks that stay for a person: the marks that the check
+// lists, and with includeLow the marks of a reading at the low level too.
+func leftMarks(index *unswell.AISounding, includeLow bool) []unswell.AIMark {
+	if includeLow {
+		return index.Marks
+	}
+	listed, _ := index.Listed()
+	return listed
 }
 
 // pageIndex returns the index of one page, or nil when it has none.
@@ -136,6 +149,8 @@ var fixSignalNames = [][3]string{
 	{"arrow", "arrow", "arrows"},
 	{"stock-word", "stock word", "stock words"},
 	{"bold-label-in-list", "bold label", "bold labels"},
+	{"plain-sentence-run", "run of plain sentences", "runs of plain sentences"},
+	{"subject-opener-run", "run of sentences that open with their subject", "runs of sentences that open with their subject"},
 }
 
 // markText lists counted marks by signal, such as "3 em dashes, 1 arrow".
@@ -159,7 +174,7 @@ func fixSummary(out fixPayload) string {
 	case !out.Indexed:
 		return "No index: not a Markdown page of 150 prose words or more."
 	case out.LeftLow:
-		return fmt.Sprintf("AI-sounding index %d, low: left as it is.", out.Before)
+		return fmt.Sprintf("AI-sounding index %d, marks low: left as it is.", out.Before)
 	case out.Changed:
 		line := fmt.Sprintf("AI-sounding index %d -> %d; removed %s.", out.Before, out.After, markText(out.Removed))
 		if left := markText(out.Left); left != "" {

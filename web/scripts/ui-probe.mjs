@@ -322,11 +322,13 @@ async function main() {
   // and whether the button puts the CLI's fixed text into the box.
   const sampleText = await (await fetch(new URL("samples/ai-flavored.md", base))).text();
   const cliFixed = readFileSync(
-    new URL("../../test/fixtures/cli-v0.1.0-alpha.12/ai-flavored.fixed.md", import.meta.url), "utf8");
+    new URL("../../test/fixtures/cli-v0.1.0-alpha.13/ai-flavored.fixed.md", import.meta.url), "utf8");
   const indexState = `JSON.stringify({
     level: document.querySelector(".index-card")?.dataset.level ?? "",
     value: document.querySelector(".index-value")?.textContent ?? "",
     details: [...document.querySelectorAll(".index-detail")].map(e => e.textContent),
+    readings: document.querySelector(".index-readings")?.textContent ?? "",
+    stretches: document.querySelectorAll("#report .mark-ai.is-stretch").length,
     about: document.querySelector(".index-about")?.textContent ?? "",
     button: document.querySelector('[data-action="fix"]')?.textContent ?? "",
     undo: document.querySelector('[data-action="undo-fix"]') !== null,
@@ -345,6 +347,7 @@ async function main() {
   const marked = JSON.parse(await evaluate(indexState));
   check(marked.level === "high", "the AI-flavored sample has a high AI-sounding index", marked.level);
   check(/^\d+ \/ 100$/.test(marked.value), "the index card shows a number out of 100", marked.value);
+  check(/^marks \d+ · rhythm \d+$/.test(marked.readings), "the index card shows its two readings", marked.readings);
   check(/^\d+ prose words: .*em dashes.*stock words/.test(marked.details[0] ?? ""),
     "the index card counts the marks in the CLI's words", marked.details[0]);
   check(marked.about.includes("not a probability"),
@@ -386,7 +389,7 @@ async function main() {
   check(fixed.text === cliFixed, "the fix puts the text of unswell fix into the box");
   check(["—", "→", "✨", "🚀", "**"].every((m) => !fixed.text.includes(m)),
     "the fixed text has none of the replaced marks");
-  const summary = /^unswell fix AI-sounding index (\d+) -> (\d+); removed .*\. Left for you: 7 stock words\./
+  const summary = /^unswell fix AI-sounding index (\d+) -> (\d+); removed .*\. Left for you: 7 stock words[,.]/
     .exec(fixed.fixNote);
   check(summary !== null, "the rail reports the fix in the line of unswell fix", fixed.fixNote.slice(0, 160));
   check(summary !== null && `${summary[1]} / 100` === marked.value && `${summary[2]} / 100` === fixed.value,
@@ -396,15 +399,37 @@ async function main() {
   check(fixed.fixNote.includes("A replacement is mechanical."),
     "the rail repeats the caution of unswell fix");
   check(fixed.button === "" && fixed.undo === true,
-    "with only stock words left the fix is gone and the undo is offered");
-  check(fixed.marks.length === 7 && fixed.notes.every((n) => n.startsWith("stock word ")),
-    "the marks that remain are the stock words", fixed.marks.join(" "));
+    "with nothing left to replace the fix is gone and the undo is offered");
+  check(fixed.notes.filter((n) => n.startsWith("stock word ")).length === 7 &&
+    fixed.notes.every((n) => n.startsWith("stock word ") || / in a row/.test(n)),
+    "the marks that remain are the stock words and the runs of sentences", fixed.notes.length + " line(s)");
 
   await runAndWaitForReport(evaluate, `document.querySelector('[data-action="undo-fix"]').click()`);
   const undone = JSON.parse(await evaluate(indexState));
   check(undone.text === sampleText, "undoing the fix puts the original text back");
   check(undone.value === marked.value && undone.fixNote === "" && /^Fix \d+ marks$/.test(undone.button),
     "after the undo the page reports the original text again", undone.value);
+
+  /* ---------- A page without the marks is read by its rhythm ---------- */
+
+  await runAndWaitForReport(evaluate, `(() => {
+    document.getElementById("clear").click();
+    const input = document.getElementById("input");
+    const sentence = "The server reads the request and sends the response to the client. ";
+    input.value = ["# Client", "", sentence.repeat(16).trim(), ""].join(String.fromCharCode(10));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    document.getElementById("analyze").click();
+  })()`);
+  const even = JSON.parse(await evaluate(indexState));
+  const evenReadings = /^marks (\d+) · rhythm (\d+)$/.exec(even.readings);
+  check(even.level === "high" && evenReadings !== null && Number(evenReadings[1]) < 40 && Number(evenReadings[2]) >= 70,
+    "a page of even sentences is high by its rhythm and low by its marks", even.readings);
+  check(even.stretches > 0 && even.notes.some((n) => /^16 plain sentences in a row; /.test(n)),
+    "the run is underlined in the document and listed with its remedy", `${even.stretches} piece(s)`);
+  check(even.button === "" && (await evaluate(`document.querySelector('[data-action="fix-low"]') === null`)) === true,
+    "a page with nothing to replace offers no fix");
+  check(even.details.some((d) => d.startsWith("A run of sentences has no replacement")),
+    "the card says that a run has no mechanical replacement");
 
   /* ---------- An unavailable channel says why ---------- */
 

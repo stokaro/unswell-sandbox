@@ -62,15 +62,15 @@ export function indexMarkId(position: number): string {
 }
 
 /**
- * Whether the marks of the index are shown.
+ * Whether the page has marks of the index to show.
  *
- * The CLI's report lists the marks of a page above the level low and none at
- * that level, and `unswell fix` leaves such a page as it is. The page follows
- * both, so a low page shows its number and no marks.
+ * The engine lists the marks of a reading that is above the level low and none
+ * of a reading at that level, and the report carries the marks it lists. A
+ * page whose two readings are low shows its number and no marks.
  */
 export function listsIndexMarks(report: Report): boolean {
   const index = report.aiSounding;
-  return index !== undefined && index.status === "available" && index.level !== "low";
+  return index !== undefined && index.status === "available" && index.marks.length > 0;
 }
 
 /** The severity classes the page draws. Anything else is drawn as info. */
@@ -261,7 +261,9 @@ export function renderReport(source: ByteText, report: Report): RenderResult {
         start: mark.start,
         end: mark.end,
         segments: [{ start: mark.start, end: mark.end }],
-        className: "mark mark-ai",
+        // A run of sentences covers a paragraph or more. It is underlined like
+        // any other stretch, because a fill would hide the marks inside it.
+        className: mark.sentences ? "mark mark-ai is-stretch" : "mark mark-ai",
         label: `Mark of the AI-sounding index: ${mark.note ?? mark.signal}`,
         badge: null,
         betweenUnits: true,

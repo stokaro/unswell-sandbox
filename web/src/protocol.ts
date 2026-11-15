@@ -102,7 +102,11 @@ export interface Unit {
 /** One counted signal of the AI-sounding index. */
 export interface IndexSignal {
   name: string;
+  /** The reading the signal belongs to: "marks" or "rhythm". */
+  reading: string;
   count: number;
+  /** The sentences in the runs of a run signal. */
+  sentences?: number;
   perThousand: number;
 }
 
@@ -121,6 +125,8 @@ export interface IndexMark {
   line: number;
   column: number;
   word?: string;
+  /** The length of a run of sentences, for a mark that is one. */
+  sentences?: number;
   note?: string;
   fix?: Span & { text: string };
 }
@@ -131,22 +137,32 @@ export interface IndexMark {
  * The number, the level, the counts and the marks are the engine's. The words
  * (`summary`, each mark's `note`, `unlisted`, `advice`, `about`) are lines of
  * the CLI's text report for the same result.
+ *
+ * The index is the higher of two readings: the marks that people remove from
+ * a model's text, and the rhythm of the sentences. The engine lists the marks
+ * of a reading only when that reading is above the level low, and `marks`
+ * holds the marks it lists.
  */
 export interface AISounding {
   /** "available", or the engine's reason for no index, such as "too_short". */
   status: string;
   index: number;
   level?: "low" | "elevated" | "high";
+  marksReading: number;
+  rhythmReading: number;
   words: number;
   summary?: string;
   signals: IndexSignal[];
   marks: IndexMark[];
-  /** Every mark the signals count. `marks` lists at most the engine's limit. */
+  /** Every mark of the listed readings. `marks` holds at most the engine's limit. */
   counted: number;
   /** How many listed marks carry a mechanical replacement. */
   fixable: number;
+  /** Marks with a replacement that are not listed, because their reading is low. */
+  fixableUnlisted: number;
   unlisted?: string;
-  advice?: string;
+  /** The CLI's lines below the marks: what a command can replace, and what it cannot. */
+  advice?: string[];
   about?: string;
 }
 
