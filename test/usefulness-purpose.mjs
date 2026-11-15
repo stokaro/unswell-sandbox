@@ -25,8 +25,12 @@ const controls = [
   "The parser can be used to correlate records. This may be useful for tracing purposes.",
 ];
 
+// Since alpha.10 the rule ships off: it reports on pages that people wrote before
+// language models. The strict profile keeps it, so the page shows it there only.
+const shipped = (profile) => profile === "strict";
+
 function checkFinding(finding, source, sentence) {
-  assert.equal(finding.ruleVersion, "15");
+  assert.equal(finding.ruleVersion, "19");
   assert.equal(Buffer.from(source).subarray(finding.start, finding.end).toString(), sentence.slice(0, -1));
   assert.match(finding.message, /support and helpfulness clauses/);
   assert.match(finding.suggestion, /relative clause's antecedent/);
@@ -41,8 +45,8 @@ for (const profile of ["technical", "strict"]) {
     const result = await runtime.analyze(source, profile);
     assert.equal(result.incomplete, false);
     const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
-    assert.equal(findings.length, 1, `${profile}: ${sentence}`);
-    checkFinding(findings[0], source, sentence);
+    assert.equal(findings.length, shipped(profile) ? 1 : 0, `${profile}: ${sentence}`);
+    if (shipped(profile)) checkFinding(findings[0], source, sentence);
   }
   for (const source of controls) {
     const result = await runtime.analyze(source, profile);
@@ -58,7 +62,8 @@ for (const profile of ["technical", "strict"]) {
     const result = await runtime.analyze(source, profile);
     assert.equal(result.incomplete, false);
     const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
-    assert.equal(findings.length, 1);
+    assert.equal(findings.length, shipped(profile) ? 1 : 0);
+    if (!shipped(profile)) continue;
     checkFinding(findings[0], source, sentence);
     assert.equal(findings[0].related.length, 1);
     const location = findings[0].related[0];
@@ -71,8 +76,8 @@ for (const profile of ["technical", "strict"]) {
   const python = await runtime.analyze(source, profile, "python");
   assert.equal(python.incomplete, false);
   const findings = python.findings.filter((finding) => finding.ruleId === ruleId);
-  assert.equal(findings.length, 1);
-  checkFinding(findings[0], source, pythonSentence);
+  assert.equal(findings.length, shipped(profile) ? 1 : 0);
+  if (shipped(profile)) checkFinding(findings[0], source, pythonSentence);
 
   const revision = await runtime.analyze(
     "You can use the client to associate messages with vertices that may help with tracing.", profile);

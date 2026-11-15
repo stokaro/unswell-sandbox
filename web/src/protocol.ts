@@ -99,7 +99,78 @@ export interface Unit {
   originStatus?: string;
 }
 
+/** One counted signal of the AI-sounding index. */
+export interface IndexSignal {
+  name: string;
+  count: number;
+  perThousand: number;
+}
+
+/**
+ * One counted mark of the AI-sounding index.
+ *
+ * `note` is what the CLI's own report prints at this mark after the position,
+ * such as `em dash; write a comma`. The CLI lists a bounded number of marks in
+ * one run, so a mark past that bound has no note. `fix` is the replacement
+ * `unswell fix` makes; a stock word has none.
+ */
+export interface IndexMark {
+  signal: string;
+  start: number;
+  end: number;
+  line: number;
+  column: number;
+  word?: string;
+  note?: string;
+  fix?: Span & { text: string };
+}
+
+/**
+ * The engine's AI-sounding index of a Markdown page.
+ *
+ * The number, the level, the counts and the marks are the engine's. The words
+ * (`summary`, each mark's `note`, `unlisted`, `advice`, `about`) are lines of
+ * the CLI's text report for the same result.
+ */
+export interface AISounding {
+  /** "available", or the engine's reason for no index, such as "too_short". */
+  status: string;
+  index: number;
+  level?: "low" | "elevated" | "high";
+  words: number;
+  summary?: string;
+  signals: IndexSignal[];
+  marks: IndexMark[];
+  /** Every mark the signals count. `marks` lists at most the engine's limit. */
+  counted: number;
+  /** How many listed marks carry a mechanical replacement. */
+  fixable: number;
+  unlisted?: string;
+  advice?: string;
+  about?: string;
+}
+
+/** The answer to a fix: the text after the replacements `unswell fix` makes. */
+export interface FixResult {
+  kind: "fix";
+  name: string;
+  durationMs: number;
+  text: string;
+  changed: boolean;
+  indexed: boolean;
+  leftLow: boolean;
+  before: number;
+  after: number;
+  removed: Record<string, number>;
+  left: Record<string, number>;
+  /** The line `unswell fix` prints for the page, without its path. */
+  summary: string;
+  /** The sentence `unswell fix` closes its report with. */
+  caution: string;
+}
+
 export interface Report {
+  kind: "report";
   profile: string;
   format: string;
   name: string;
@@ -138,6 +209,8 @@ export interface Report {
     status?: string;
     reason?: string;
   };
+  /** Absent for every format but Markdown: the engine measures none there. */
+  aiSounding?: AISounding;
   incomplete: boolean;
   notes?: string[];
 }
@@ -146,6 +219,7 @@ export type WorkerRequest =
   /** Boot the runtime. `base` is the URL every vendored asset resolves against. */
   | { type: "init"; base: string }
   | { type: "analyze"; runId: number; text: string; profile: string; format: string }
+  | { type: "fix"; runId: number; text: string; profile: string; format: string; includeLow: boolean }
   | { type: "cancel"; runId: number };
 
 /**
@@ -163,6 +237,7 @@ export type HostEvent =
    */
   | { type: "progress"; phase: BootPhase; loaded: number; total: number }
   | { type: "report"; runId: number; report: Report }
+  | { type: "fixed"; runId: number; fix: FixResult }
   | { type: "failed"; runId: number; message: string }
   /** Go's runtime panic path, and anything else that outlives a single run. */
   | { type: "panic"; message: string }

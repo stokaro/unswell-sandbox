@@ -315,6 +315,97 @@ async function main() {
     `${o.notice} notice(s)`);
   console.log(`      AI-flavored sample origin: ${o.texts.join(", ") || "none in band"}`);
 
+  /* ---------- The AI-sounding index, its marks, and the fix ---------- */
+
+  // The numbers and the words are compared with the published CLI in
+  // test/ai-sounding.mjs. Here the question is whether the page shows them,
+  // and whether the button puts the CLI's fixed text into the box.
+  const sampleText = await (await fetch(new URL("samples/ai-flavored.md", base))).text();
+  const cliFixed = readFileSync(
+    new URL("../../test/fixtures/cli-v0.1.0-alpha.12/ai-flavored.fixed.md", import.meta.url), "utf8");
+  const indexState = `JSON.stringify({
+    level: document.querySelector(".index-card")?.dataset.level ?? "",
+    value: document.querySelector(".index-value")?.textContent ?? "",
+    details: [...document.querySelectorAll(".index-detail")].map(e => e.textContent),
+    about: document.querySelector(".index-about")?.textContent ?? "",
+    button: document.querySelector('[data-action="fix"]')?.textContent ?? "",
+    undo: document.querySelector('[data-action="undo-fix"]') !== null,
+    fixNote: document.querySelector(".note-fix")?.textContent ?? "",
+    // One mark can be drawn in two pieces, on both sides of a paragraph's start.
+    marks: Object.values([...document.querySelectorAll("#report .mark-ai")].reduce((by, e) => {
+      (by[e.dataset.finding] ??= []).push(e.textContent);
+      return by;
+    }, {})).map(pieces => pieces.join("")),
+    notes: [...document.querySelectorAll(".note-ai .note-ai-text")].map(e => e.textContent),
+    places: [...document.querySelectorAll(".note-ai .note-rule")].map(e => e.textContent),
+    section: document.querySelector(".rail-section")?.textContent ?? "",
+    numbered: document.querySelectorAll("#report .mark-ai > .mark-index").length,
+    text: document.getElementById("input").value,
+  })`;
+  const marked = JSON.parse(await evaluate(indexState));
+  check(marked.level === "high", "the AI-flavored sample has a high AI-sounding index", marked.level);
+  check(/^\d+ \/ 100$/.test(marked.value), "the index card shows a number out of 100", marked.value);
+  check(/^\d+ prose words: .*em dashes.*stock words/.test(marked.details[0] ?? ""),
+    "the index card counts the marks in the CLI's words", marked.details[0]);
+  check(marked.about.includes("not a probability"),
+    "the index card says it is not a probability", marked.about);
+  check(/^Fix \d+ marks$/.test(marked.button), "the index card offers the fix", marked.button);
+  check(["—", "→", "✨", "🚀", "**Retries:**", "landscape"].every((m) => marked.marks.includes(m)),
+    "every kind of mark of the index is drawn in the document", marked.marks.join(" "));
+  check(marked.numbered === 0, "a mark of the index carries no finding number");
+  check(marked.notes.length === marked.marks.length && marked.notes.length > 0,
+    "every mark of the index has its line in the rail",
+    `${marked.notes.length} line(s), ${marked.marks.length} mark(s)`);
+  check([
+    "em dash; write a comma",
+    "em dash; write a colon",
+    "em dash; write a period and start the next word with a capital letter",
+    'arrow; write "->"',
+    "emoji in a heading; remove it",
+    'stock word "landscape"; say what the thing does, or drop the word',
+  ].every((n) => marked.notes.includes(n)), "each line says what the CLI says to do at the mark");
+  check(marked.places.every((place) => /^\d+:\d+$/.test(place)),
+    "each line names the line and column of its mark");
+  check(marked.section === `Marks of the index · ${marked.marks.length}`,
+    "the rail counts the marks of the index", marked.section);
+
+  const aiLink = JSON.parse(await evaluate(`(() => {
+    const note = document.querySelector(".note-ai");
+    note.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
+    const mark = document.querySelector('#report .mark[data-finding="' + note.dataset.finding + '"]');
+    return JSON.stringify({
+      note: note.classList.contains("is-active"),
+      mark: mark ? mark.classList.contains("is-active") : null,
+    });
+  })()`));
+  check(aiLink.note === true && aiLink.mark === true,
+    "hovering a line of the index activates its mark in the document");
+
+  await runAndWaitForReport(evaluate, `document.querySelector('[data-action="fix"]').click()`);
+  const fixed = JSON.parse(await evaluate(indexState));
+  check(fixed.text === cliFixed, "the fix puts the text of unswell fix into the box");
+  check(["—", "→", "✨", "🚀", "**"].every((m) => !fixed.text.includes(m)),
+    "the fixed text has none of the replaced marks");
+  const summary = /^unswell fix AI-sounding index (\d+) -> (\d+); removed .*\. Left for you: 7 stock words\./
+    .exec(fixed.fixNote);
+  check(summary !== null, "the rail reports the fix in the line of unswell fix", fixed.fixNote.slice(0, 160));
+  check(summary !== null && `${summary[1]} / 100` === marked.value && `${summary[2]} / 100` === fixed.value,
+    "the line names the index before and the index now on screen", `${marked.value} then ${fixed.value}`);
+  check(Number.parseInt(fixed.value, 10) < Number.parseInt(marked.value, 10),
+    "the index is lower after the fix", `${marked.value} then ${fixed.value}`);
+  check(fixed.fixNote.includes("A replacement is mechanical."),
+    "the rail repeats the caution of unswell fix");
+  check(fixed.button === "" && fixed.undo === true,
+    "with only stock words left the fix is gone and the undo is offered");
+  check(fixed.marks.length === 7 && fixed.notes.every((n) => n.startsWith("stock word ")),
+    "the marks that remain are the stock words", fixed.marks.join(" "));
+
+  await runAndWaitForReport(evaluate, `document.querySelector('[data-action="undo-fix"]').click()`);
+  const undone = JSON.parse(await evaluate(indexState));
+  check(undone.text === sampleText, "undoing the fix puts the original text back");
+  check(undone.value === marked.value && undone.fixNote === "" && /^Fix \d+ marks$/.test(undone.button),
+    "after the undo the page reports the original text again", undone.value);
+
   /* ---------- An unavailable channel says why ---------- */
 
   // A missing badge cannot distinguish "the model abstained here" from "the
@@ -334,8 +425,12 @@ async function main() {
       status: notice?.querySelector("strong")?.textContent ?? "",
       text: notice?.textContent ?? "",
       badges: document.querySelectorAll(".para-origin").length,
+      indexLevel: document.querySelector(".index-card")?.dataset.level ?? "",
+      indexText: document.querySelector(".index-card")?.textContent ?? "",
     });
   })()`));
+  check(silent.indexLevel === "none" && /prose words\. The index covers a Markdown page of 150/.test(silent.indexText),
+    "a page too short for the index says so", silent.indexText.slice(0, 120));
   check(silent.shown, "the rail says why the origin channel produced nothing");
   check(silent.badges === 0, "no estimate is drawn while the channel is unavailable",
     `${silent.badges} badge(s)`);
@@ -354,8 +449,14 @@ async function main() {
     gate: document.querySelector(".stat-value").textContent,
     clean: document.querySelector(".note-clean") !== null,
     count: document.getElementById("rail-count").textContent,
+    indexLevel: document.querySelector(".index-card")?.dataset.level ?? "",
+    indexMarks: document.querySelectorAll("#report .mark-ai, .note-ai").length,
+    fix: document.querySelector('[data-action="fix"], [data-action="fix-low"]') !== null,
   })`);
   const c = JSON.parse(clean);
+  check(c.indexLevel === "low" && c.indexMarks === 0 && c.fix === false,
+    "the revision has a low index, no marks of it, and nothing to fix",
+    `level=${c.indexLevel} marks=${c.indexMarks} fix=${c.fix}`);
   check(c.marks === 0, "the revision produces no marks", `${c.marks}`);
   check(c.gate === "PASS", "the revision passes the gate", c.gate);
   check(c.clean === true, "the rail says so in words rather than showing an empty list");
@@ -377,13 +478,27 @@ async function main() {
     marks: [...document.querySelectorAll("#report .mark")].map(e => e.textContent).join(""),
     font: getComputedStyle(document.getElementById("report")).fontFamily,
   })`));
-  check(mdx.rules.length === 1 && mdx.rules[0] === "filler.instruction-scaffolding",
-    "the MDX sample delivers the complete purpose diagnosis");
+  check(mdx.rules.length === 1 && mdx.rules[0] === "filler.announced-importance",
+    "the MDX sample is marked in its prose and not in its code", mdx.rules.join(","));
   check(mdx.dim.includes("import TracePreview") && mdx.dim.includes("<TracePreview"),
     "MDX imports and JSX syntax are dimmed");
-  check(mdx.marks.includes("café messages") && mdx.marks.includes("tracing purposes"),
-    "the MDX source mark retains both clauses and Unicode text");
   check(mdx.font.includes("Crimson Pro"), "MDX retains the prose font", mdx.font);
+  check(/no index.*Markdown pages\. This text was read as MDX/.test(
+    await evaluate('document.querySelector(".index-card")?.textContent ?? ""')),
+    "an MDX page says the index is measured on Markdown pages");
+
+  // The purpose diagnosis comes from a rule that ships off; strict keeps it.
+  await evaluate('document.querySelector(\'#profile-control button[data-value="strict"]\').click()');
+  await runAndWaitForReport(evaluate, 'document.getElementById("analyze").click()');
+  const strictMdx = JSON.parse(await evaluate(`JSON.stringify({
+    rules: [...document.querySelectorAll(".note-rule")].map(e => e.textContent),
+    marks: [...document.querySelectorAll("#report .mark")].map(e => e.textContent).join(""),
+  })`));
+  check(strictMdx.rules.includes("filler.instruction-scaffolding"),
+    "the strict profile delivers the complete purpose diagnosis", strictMdx.rules.join(","));
+  check(strictMdx.marks.includes("café messages") && strictMdx.marks.includes("tracing purposes"),
+    "the MDX source mark retains both clauses and Unicode text");
+  await evaluate('document.querySelector(\'#profile-control button[data-value="technical"]\').click()');
 
   /* ---------- Python mode dims the code ---------- */
 

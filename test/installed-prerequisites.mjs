@@ -4,6 +4,9 @@ import { boot } from "./harness.mjs";
 
 const runtime = await boot();
 const ruleId = "filler.instruction-scaffolding";
+// Since alpha.10 the rule ships off: it reports on pages that people wrote before
+// language models. The strict profile keeps it, so the page shows it there only.
+const shipped = (profile) => profile === "strict";
 const positives = [
   "To work with the React UI code, you will need to have the following tools installed:",
   "You will need to have the following tools installed.",
@@ -35,9 +38,10 @@ for (const profile of ["technical", "strict"]) {
     const result = await runtime.analyze(source, profile);
     assert.equal(result.incomplete, false);
     const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
-    assert.equal(findings.length, 1, `${profile}: ${text}`);
+    assert.equal(findings.length, shipped(profile) ? 1 : 0, `${profile}: ${text}`);
+    if (!shipped(profile)) continue;
     const finding = findings[0];
-    assert.equal(finding.ruleVersion, "15");
+    assert.equal(finding.ruleVersion, "19");
     assert.equal(Buffer.from(source).subarray(finding.start, finding.end).toString(), text.replace(/[.:]$/, ""));
     assert.match(finding.message, /Future and possession auxiliaries/);
     assert.match(finding.suggestion, /required installed state/);
@@ -54,8 +58,10 @@ for (const profile of ["technical", "strict"]) {
   const result = await runtime.analyze(source, profile, "python");
   assert.equal(result.incomplete, false);
   const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
-  assert.equal(findings.length, 1);
-  assert.equal(Buffer.from(source).subarray(findings[0].start, findings[0].end).toString(), text.slice(0, -1));
+  assert.equal(findings.length, shipped(profile) ? 1 : 0);
+  if (shipped(profile)) {
+    assert.equal(Buffer.from(source).subarray(findings[0].start, findings[0].end).toString(), text.slice(0, -1));
+  }
   console.log(`installed-prerequisites: ${profile}: five constructions, fifteen controls, and Python UTF-8 mapping passed`);
 }
 assert.deepEqual(runtime.panics, []);

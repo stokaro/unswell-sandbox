@@ -11,13 +11,20 @@ for (const profile of ["technical", "strict"]) {
   const report = await runtime.analyze(sample, profile, "mdx");
   assert.equal(report.incomplete, false);
   assert.equal(report.format, "mdx");
-  assert.equal(report.findings.length, 1);
-  const finding = report.findings[0];
-  assert.equal(finding.ruleId, "filler.instruction-scaffolding");
-  assert.equal(finding.ruleVersion, "15");
-  assert.equal(Buffer.from(sample).subarray(finding.start, finding.end).toString(), sentence);
-  assert.match(finding.message, /support and helpfulness clauses/);
-  assert.match(finding.suggestion, /modality of both clauses/);
+  // The default rules mark the announced importance. The purpose diagnosis
+  // comes from a rule that ships off since alpha.10; the strict profile keeps it.
+  const announced = report.findings.filter((finding) => finding.ruleId === "filler.announced-importance");
+  assert.equal(announced.length, 1);
+  assert.equal(Buffer.from(sample).subarray(announced[0].start, announced[0].end).toString(), "It is important to note that");
+  assert.equal(report.findings.length, profile === "strict" ? 2 : 1);
+  if (profile === "strict") {
+    const finding = report.findings.find((candidate) => candidate.ruleId === "filler.instruction-scaffolding");
+    assert.ok(finding);
+    assert.equal(finding.ruleVersion, "19");
+    assert.equal(Buffer.from(sample).subarray(finding.start, finding.end).toString(), sentence);
+    assert.match(finding.message, /support and helpfulness clauses/);
+    assert.match(finding.suggestion, /modality of both clauses/);
+  }
   const source = 'export const marker = (globalThis.__unswellMdxRan = true, "Certainly! Here is the guide.");\n\nThe client fetches records.\n';
   const control = await runtime.analyze(source, profile, "mdx");
   assert.equal(control.incomplete, false);

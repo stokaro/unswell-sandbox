@@ -16,7 +16,7 @@
  * freeze exactly while the work it represents is happening.
  */
 
-import type { BootPhase, HostEvent, ReadyInfo, Report, WorkerRequest } from "./protocol.ts";
+import type { BootPhase, FixResult, HostEvent, ReadyInfo, Report, WorkerRequest } from "./protocol.ts";
 
 declare const self: DedicatedWorkerGlobalScope;
 
@@ -32,6 +32,7 @@ declare class Go {
 /** The Go half of the contract, installed by cmd/unswell-wasm once running. */
 interface UnswellGoHalf {
   analyze(runId: number, text: string, profile: string, format: string): void;
+  fix(runId: number, text: string, profile: string, format: string, includeLow: boolean): void;
   cancel(runId: number): void;
 }
 
@@ -154,14 +155,16 @@ async function boot(base: string): Promise<{ info: ReadyInfo; bootMs: number }> 
     (self as unknown as { __unswellHost: unknown }).__unswellHost = {
       ready: (info: ReadyInfo) => resolve(info),
       result: (runId: number, json: string) => {
-        let report: Report;
+        // One channel carries both answers, and the payload says which it is.
+        let answer: Report | FixResult;
         try {
-          report = JSON.parse(json) as Report;
+          answer = JSON.parse(json) as Report | FixResult;
         } catch (err) {
           post({ type: "failed", runId, message: `could not parse the report: ${String(err)}` });
           return;
         }
-        post({ type: "report", runId, report });
+        if (answer.kind === "fix") post({ type: "fixed", runId, fix: answer });
+        else post({ type: "report", runId, report: answer });
       },
       failed: (runId: number, message: string) => post({ type: "failed", runId, message }),
       panic: (message: string) => {
@@ -213,6 +216,18 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       }
       try {
         unswell.analyze(message.runId, message.text, message.profile, message.format);
+      } catch (err) {
+        post({ type: "failed", runId: message.runId, message: describe(err) });
+      }
+      return;
+    }
+    case "fix": {
+      if (!unswell) {
+        post({ type: "failed", runId: message.runId, message: "the engine is not running yet" });
+        return;
+      }
+      try {
+        unswell.fix(message.runId, message.text, message.profile, message.format, message.includeLow);
       } catch (err) {
         post({ type: "failed", runId: message.runId, message: describe(err) });
       }

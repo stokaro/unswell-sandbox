@@ -36,8 +36,12 @@ const controls = [
   first + " The worker starts. " + second,
 ];
 
+// Since alpha.10 the rule ships off: it reports on pages that people wrote before
+// language models. The strict profile keeps it, so the page shows it there only.
+const shipped = (profile) => profile === "strict";
+
 function checkLocations(finding, source, a, b) {
-  assert.equal(finding.ruleVersion, "15");
+  assert.equal(finding.ruleVersion, "19");
   assert.equal(Buffer.from(source).subarray(finding.start, finding.end).toString(), a.slice(0, -1));
   assert.equal(finding.related.length, 1);
   const location = finding.related[0];
@@ -55,8 +59,8 @@ for (const profile of ["technical", "strict"]) {
       const result = await runtime.analyze(source, profile);
       assert.equal(result.incomplete, false);
       const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
-      assert.equal(findings.length, 1, `${profile}: ${source}`);
-      checkLocations(findings[0], source, a, b);
+      assert.equal(findings.length, shipped(profile) ? 1 : 0, `${profile}: ${source}`);
+      if (shipped(profile)) checkLocations(findings[0], source, a, b);
     }
   }
   for (const source of controls) {
@@ -70,8 +74,8 @@ for (const profile of ["technical", "strict"]) {
   const result = await runtime.analyze(source, profile, "python");
   assert.equal(result.incomplete, false);
   const findings = result.findings.filter((finding) => finding.ruleId === ruleId);
-  assert.equal(findings.length, 1);
-  checkLocations(findings[0], source, a, b);
+  assert.equal(findings.length, shipped(profile) ? 1 : 0);
+  if (shipped(profile)) checkLocations(findings[0], source, a, b);
   console.log(`conditioned-methods: ${profile}: five paired constructions, sixteen controls, and Python UTF-8 mapping passed`);
 }
 assert.deepEqual(runtime.panics, []);

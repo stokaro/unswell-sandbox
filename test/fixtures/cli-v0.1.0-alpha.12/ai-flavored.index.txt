@@ -1,0 +1,21 @@
+AI-sounding index: 100 of 100 (high) in playground.md: 5 em dashes, 1 emoji in a heading, 1 list item that starts with an emoji, 2 arrows, 7 stock words, 2 list items that start with a bold label.
+  playground.md:4:34: stock word "landscape"; say what the thing does, or drop the word
+  playground.md:4:67: stock word "game-changing"; say what the thing does, or drop the word
+  playground.md:6:31: stock word "powerful"; say what the thing does, or drop the word
+  playground.md:6:41: stock word "seamless"; say what the thing does, or drop the word
+  playground.md:7:1: stock word "robust"; say what the thing does, or drop the word
+  playground.md:7:73: stock word "powerful"; say what the thing does, or drop the word
+  playground.md:8:26: stock word "seamless"; say what the thing does, or drop the word
+  playground.md:26:4: emoji in a heading; remove it
+  playground.md:28:3: list item that starts with a bold label; remove the bold
+  playground.md:28:52: em dash; write a comma
+  playground.md:29:3: list item that starts with a bold label; remove the bold
+  playground.md:29:51: em dash; write a comma
+  playground.md:30:3: list item that starts with an emoji; remove it
+  playground.md:30:24: arrow; write "->"
+  playground.md:30:32: arrow; write "->"
+  playground.md:31:11: em dash; write a colon
+  playground.md:33:25: em dash; write a period and start the next word with a capital letter
+  playground.md:34:8: em dash; write a comma
+`unswell fix --write` makes the replacements named above. A stock word needs your own words.
+The index counts marks that people remove when they clean AI-sounding wording out of documentation. It is not a probability and does not say who wrote a page.

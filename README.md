@@ -6,6 +6,9 @@ account, nothing installed, and the text never leaves the page.
 
 Paste English prose, a Markdown or MDX document, or a Python file. The engine
 marks what it found inline and lists each finding as a note in the margin.
+A Markdown page of 150 prose words or more also gets its AI-sounding index,
+with every mark the index counts shown in the text, and one button makes the
+replacements of `unswell fix`.
 Choose MDX for a document with imports, JavaScript expressions or JSX components.
 The native extractor excludes that syntax and keeps the original prose locations;
 it does not evaluate the document's JavaScript or components.
@@ -26,6 +29,9 @@ the linter. So this one does not fake anything:
 - The score beside each paragraph is the engine's index for that paragraph, and
   the `+N pts` on a note is that finding's contribution to it **after** the
   rule and group caps, not its raw weight.
+- The AI-sounding index, its level and its marks are the engine's, and the
+  words beside them are lines of the CLI's own text report for the same
+  result. The fixed text is what `unswell fix` writes for the same page.
 
 There is no JavaScript fallback and there will not be one. A second
 implementation of the rules would drift from the engine, and the whole point of
@@ -84,9 +90,12 @@ From a clean build on darwin/arm64 with go1.27.1, at the pin
 | boot to `ready()`, headless Chrome, localhost | ~560 ms |
 | one analysis of the AI-flavored sample | 150–190 ms |
 
-The current `e146774df81e` build contains 57 rules. Its WASM is 49,793,410 bytes
-raw and 22,254,657 bytes with `gzip -9`, built with go1.27.1 on darwin/arm64.
-The timing figures above describe the earlier alpha.3 build.
+The current build is `v0.1.0-alpha.12` with 60 rules. Its WASM is 59,266,149
+bytes raw and 24,181,443 bytes with `gzip -9`, built with go1.27.3 on
+darwin/arm64. About 7 MB of the raw size, 1.4 MB compressed, is the CLI's
+report package, which the page links to print the CLI's own words at each mark
+of the AI-sounding index. The timing figures above describe the earlier
+alpha.3 build.
 
 ## The pin
 
@@ -156,14 +165,20 @@ starts. Go resolves it once at startup and holds it, so it cannot be installed
 afterwards and cannot be swapped later.
 
     __unswellHost.ready(info)              once, before any analysis is accepted
-    __unswellHost.result(runId, json)      one finished report, as a JSON string
+    __unswellHost.result(runId, json)      one finished answer, as a JSON string
     __unswellHost.failed(runId, message)   one analysis that produced no report
     __unswellHost.panic(message)           a fault that belongs to no single run
 
 Go installs `globalThis.__unswell` once it is running:
 
     __unswell.analyze(runId, text, profile, format)
+    __unswell.fix(runId, text, profile, format, includeLow)
     __unswell.cancel(runId)
+
+Both calls answer through `result()`. The payload's `kind` says which answer it
+is: `report` for an analysis, `fix` for the text after the replacements of
+`unswell fix`. A fix is a run like an analysis: one at a time, refused through
+`failed()` while another is in flight, and cancelable.
 
 `ready(info)` carries the build stamp — `version`, `commit`, `goVersion` — and
 the rule catalog from `Engine.Catalog()`, plus the profiles and formats this
@@ -213,6 +228,49 @@ what the page renders. Two parts are derived rather than forwarded:
   leaves block numbering untouched, and byte ranges are what both extractions
   agree on by construction. A failure there costs context lines and nothing
   else, so it is swallowed rather than failing an analysis that succeeded.
+
+## The AI-sounding index and the fix
+
+Since `v0.1.0-alpha.10` the engine gives a Markdown page of 150 prose words or
+more an index from 0 to 100 with the levels `low`, `elevated` and `high`, and
+each counted mark carries the replacement that removes it. The page shows the
+index in a card of the rail, draws every located mark in the document in a
+color of its own, and lists the marks under the findings.
+
+Three parts of this are the CLI's, by construction rather than by copy:
+
+- **The numbers and the marks** come from `Result.Documents[0].AISounding`.
+- **The words** come from the CLI's text report. `index.go` renders the
+  completed result with `report.Write` and cuts the index block out of it: the
+  counts, one line for each mark (`em dash; write a comma`), the sentence about
+  `unswell fix`, and the sentence about what the index is. The report lists 60
+  marks in one run and says how many it left out; the rail lists the same 60
+  and repeats that sentence. All located marks, up to the engine's 200 on one
+  page, are still drawn in the document.
+- **The replacements** are applied by `unswell.RemoveAIMarks`.
+
+One part is mirrored. The loop around `RemoveAIMarks` (analyze, replace,
+analyze again, at most eight passes, and leave a page at the level low as it
+is) lives in the CLI's command package, which is not public API. `fix.go`
+follows it step by step, together with the line `unswell fix` prints for a
+page.
+
+`test/ai-sounding.mjs` holds both to the published binary. The files in
+`test/fixtures/cli-v0.1.0-alpha.12` are what that binary printed and wrote for
+the Markdown sample, and the test requires the same index, the same line at
+every mark, the same fixed text byte for byte, and the same summary line. A
+pin that changes any of them fails the build until the fixtures are made
+again with the new release; the fixture directory says how.
+
+A page at the level low shows its number and no marks, because the CLI lists
+none there, and the fix leaves it as it is. When such a page has marks, the
+card offers the replacements by the name of the CLI's flag, `--include-low`.
+MDX and Python have no index: the engine measures it on Markdown pages only,
+and the card says so.
+
+After a fix the box holds the fixed text and the page analyzes it at once, so
+the report on screen always describes the text in the box. The rail keeps the
+line of the fix and an undo for as long as that text stays unchanged.
 
 ## The page
 
@@ -265,6 +323,12 @@ document. Each of these is a correctness problem, not a styling one:
    `segments`. Segments separated by whitespace alone are merged, so "As an AI
    language model" is one fill rather than five; segments separated by anything
    else are left apart, because that gap is markup the rule never saw.
+
+The marks of the AI-sounding index go through the same three steps as the
+findings. A mark of the index is one more range over the same text, so it is
+flattened and nested with them. It differs in two ways: it carries no number,
+and it is also drawn in the text between two paragraphs, because the opening
+asterisks of a bold label stand before the paragraph the engine reports.
 
 Everything is built with `createElement` and `textContent`. No string of HTML
 is assembled from the visitor's text anywhere.
@@ -320,14 +384,27 @@ document too short to estimate.
 
 ## The samples
 
-Three files in `web/samples/`, and `test/samples.mjs` runs all three through
-the real engine on every `make test`:
+Four files in `web/samples/`. `test/samples.mjs` runs the two Markdown files and
+the Python file through the real engine on every `make test`, and
+`test/mdx-source.mjs` runs the MDX file:
 
 | File | technical | strict |
 | --- | --- | --- |
-| `ai-flavored.md` | 12 findings, max index 58.7, gate **fails** | 14 findings, gate fails |
+| `ai-flavored.md` | 12 findings, max index 56.0, gate **fails** | 23 findings, gate fails |
 | `revised.md` | **0 findings**, gate passes | 0 findings, gate passes |
-| `retry_client.py` | 10 findings, max index 56.0, gate **fails** | 11 findings, gate fails |
+| `retry_client.py` | 8 findings, max index 56.0, gate **fails** | 16 findings, gate fails |
+
+`ai-flavored.md` has an AI-sounding index of 100, `high`, with 18 marks: every
+kind the index counts, and each replacement the fix makes for an em dash (a
+comma, a colon after a short list label, a period between two full clauses).
+After the fix the index is 66 and seven stock words remain, which only a
+person can replace. `revised.md` has an index of 23, `low`, and none of the
+marks.
+
+The two profiles are the CLI's. `technical` is what `unswell check` runs with
+no configuration. `strict` is `builtin:strict-v1`, which keeps the six rules
+that ship off since `v0.1.0-alpha.10`. A rule that is enabled only by name
+reports under neither, here as in the CLI.
 
 The phrasings are derived from the executable examples in the rule catalog's
 own descriptors, so every finding they trigger is a genuine activation of a

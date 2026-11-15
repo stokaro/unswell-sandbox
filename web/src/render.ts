@@ -21,11 +21,57 @@
  *     `segments`. The segments are what gets filled; the markup between them
  *     stays plain.
  *
+ * The marks of the AI-sounding index are drawn by the same machinery. A mark of
+ * the index is a second kind of range over the same text, so it is flattened
+ * and nested with the findings rather than painted in a pass of its own.
+ *
  * Everything is built with createElement and textContent. No string of HTML is
  * assembled from the visitor's text anywhere in this file.
  */
 
 import type { Finding, Report, Span, Unit } from "./protocol.ts";
+
+/**
+ * One range the document marks: a finding, or a mark of the AI-sounding index.
+ *
+ * The renderer needs the same five things from both, and nothing else about
+ * either, so it works on this shape and never asks which kind it is drawing.
+ */
+interface Markable {
+  /** The value of data-finding on the mark and on its note in the rail. */
+  id: string;
+  start: number;
+  end: number;
+  segments: Span[];
+  className: string;
+  /** What a screen reader says at the mark. */
+  label: string;
+  /** The superscript that numbers a finding. A mark of the index has none. */
+  badge: string | null;
+  /**
+   * Whether the range is also drawn in the text between two units. A finding
+   * is about prose and stays inside the units. A mark of the index can be
+   * markup: the asterisks of a bold label open before the paragraph starts.
+   */
+  betweenUnits: boolean;
+}
+
+/** The id a mark of the index carries in the document and in the rail. */
+export function indexMarkId(position: number): string {
+  return `index-${position}`;
+}
+
+/**
+ * Whether the marks of the index are shown.
+ *
+ * The CLI's report lists the marks of a page above the level low and none at
+ * that level, and `unswell fix` leaves such a page as it is. The page follows
+ * both, so a low page shows its number and no marks.
+ */
+export function listsIndexMarks(report: Report): boolean {
+  const index = report.aiSounding;
+  return index !== undefined && index.status === "available" && index.level !== "low";
+}
 
 /** The severity classes the page draws. Anything else is drawn as info. */
 type Severity = "forbid" | "warning" | "info";
@@ -117,8 +163,8 @@ export function band(score: number): "low" | "mid" | "high" {
 interface Slice {
   start: number;
   end: number;
-  /** Indices into the report's findings, outermost first. */
-  findings: number[];
+  /** Indices into the markable ranges, outermost first. */
+  covering: number[];
 }
 
 /**
@@ -127,10 +173,10 @@ interface Slice {
  * Only the segments are cut, not the whole span: a slice is marked when it is
  * inside a segment of a finding, and plain when it falls between two of them.
  */
-function sliceRange(start: number, end: number, findings: Finding[], indices: number[]): Slice[] {
+function sliceRange(start: number, end: number, markables: Markable[], indices: number[]): Slice[] {
   const cuts = new Set<number>([start, end]);
   for (const index of indices) {
-    for (const segment of findings[index].segments) {
+    for (const segment of markables[index].segments) {
       if (segment.start > start && segment.start < end) cuts.add(segment.start);
       if (segment.end > start && segment.end < end) cuts.add(segment.end);
     }
@@ -142,13 +188,13 @@ function sliceRange(start: number, end: number, findings: Finding[], indices: nu
     const to = boundaries[i + 1];
     if (to <= from) continue;
     const covering = indices.filter((index) =>
-      findings[index].segments.some((segment) => segment.start <= from && segment.end >= to),
+      markables[index].segments.some((segment) => segment.start <= from && segment.end >= to),
     );
     // Outermost first, so the DOM nests the way the spans nest.
     covering.sort(
-      (a, b) => findings[b].end - findings[b].start - (findings[a].end - findings[a].start),
+      (a, b) => markables[b].end - markables[b].start - (markables[a].end - markables[a].start),
     );
-    slices.push({ start: from, end: to, findings: covering });
+    slices.push({ start: from, end: to, covering });
   }
   return slices;
 }
@@ -195,63 +241,101 @@ export interface RenderResult {
 export function renderReport(source: ByteText, report: Report): RenderResult {
   const root = document.createDocumentFragment();
   const marks = new Map<string, HTMLElement[]>();
-  const findings = report.findings.map((finding) => ({
-    ...finding,
+  const markables: Markable[] = report.findings.map((finding, index) => ({
+    id: finding.id,
+    start: finding.start,
+    end: finding.end,
     segments: coalesce(source, [
       ...finding.segments,
       ...(finding.related ?? []).flatMap((location) => location.segments ?? []),
     ].sort((a, b) => a.start - b.start || a.end - b.end)),
+    className: `mark mark-${severityOf(finding)}${isStretch(finding) ? " is-stretch" : ""}`,
+    label: `Finding ${index + 1}: ${finding.message} (${finding.ruleId}, ${finding.severity})`,
+    badge: String(index + 1),
+    betweenUnits: false,
   }));
+  if (listsIndexMarks(report)) {
+    report.aiSounding!.marks.forEach((mark, position) => {
+      markables.push({
+        id: indexMarkId(position),
+        start: mark.start,
+        end: mark.end,
+        segments: [{ start: mark.start, end: mark.end }],
+        className: "mark mark-ai",
+        label: `Mark of the AI-sounding index: ${mark.note ?? mark.signal}`,
+        badge: null,
+        betweenUnits: true,
+      });
+    });
+  }
 
   // A grouped finding can have evidence in several units. Draw every mapped
   // segment; the final segment alone receives its finding number.
   const units = [...report.units].sort((a, b) => a.start - b.start);
   const placed = new Set<number>();
 
-  let cursor = 0;
-  let order = 0;
-  for (const unit of units) {
-    if (unit.start > cursor) {
-      appendGap(root, source, cursor, unit.start);
-    }
+  /** The ranges with a segment in [from, to), noted as placed. */
+  const within = (from: number, to: number, betweenUnits: boolean): number[] => {
     const inside: number[] = [];
-    findings.forEach((finding, index) => {
-      if (finding.segments.some((segment) => segment.start < unit.end && segment.end > unit.start)) {
+    markables.forEach((markable, index) => {
+      if (betweenUnits && !markable.betweenUnits) return;
+      if (markable.segments.some((segment) => segment.start < to && segment.end > from)) {
         placed.add(index);
         inside.push(index);
       }
     });
-    root.append(renderUnit(source, unit, findings, inside, marks, order++));
+    return inside;
+  };
+  const gap = (from: number, to: number): void =>
+    appendGap(root, source, from, to, markables, within(from, to, true), marks);
+
+  let cursor = 0;
+  let order = 0;
+  for (const unit of units) {
+    if (unit.start > cursor) gap(cursor, unit.start);
+    root.append(renderUnit(source, unit, markables, within(unit.start, unit.end, false), marks, order++));
     cursor = Math.max(cursor, unit.end);
   }
-  if (cursor < source.length) {
-    appendGap(root, source, cursor, source.length);
-  }
+  if (cursor < source.length) gap(cursor, source.length);
 
   // Anything the placement above could not put in a unit still has to be
   // reachable from the rail, so its absence from the document is explicit
   // rather than a mark that silently never appears.
-  findings.forEach((_, index) => {
-    if (!placed.has(index)) marks.set(findings[index].id, []);
+  markables.forEach((markable, index) => {
+    if (!placed.has(index)) marks.set(markable.id, []);
   });
 
   return { root, marks };
 }
 
-/** Text the engine did not look at: blank lines, markup, and in Python, code. */
-function appendGap(root: DocumentFragment, source: ByteText, start: number, end: number): void {
-  const text = source.slice(start, end);
-  if (text === "") return;
+/**
+ * Text the engine did not look at: blank lines, markup, and in Python, code.
+ *
+ * A mark of the index can reach into it, so it is cut into slices like a unit.
+ * With nothing to mark it is one text node, as plain as before.
+ */
+function appendGap(
+  root: DocumentFragment,
+  source: ByteText,
+  start: number,
+  end: number,
+  markables: Markable[],
+  indices: number[],
+  marks: Map<string, HTMLElement[]>,
+): void {
+  if (source.slice(start, end) === "") return;
   const span = document.createElement("span");
   span.className = "code-dim";
-  span.textContent = text;
+  for (const slice of sliceRange(start, end, markables, indices)) {
+    span.append(renderSlice(source, slice, markables, marks));
+  }
   root.append(span);
 }
 
 function renderUnit(
   source: ByteText,
   unit: Unit,
-  findings: Finding[],
+  markables: Markable[],
   indices: number[],
   marks: Map<string, HTMLElement[]>,
   order: number,
@@ -300,8 +384,8 @@ function renderUnit(
         : ""),
   );
 
-  for (const slice of sliceRange(unit.start, unit.end, findings, indices)) {
-    para.append(renderSlice(source, slice, findings, marks));
+  for (const slice of sliceRange(unit.start, unit.end, markables, indices)) {
+    para.append(renderSlice(source, slice, markables, marks));
   }
   return para;
 }
@@ -309,46 +393,41 @@ function renderUnit(
 function renderSlice(
   source: ByteText,
   slice: Slice,
-  findings: Finding[],
+  markables: Markable[],
   marks: Map<string, HTMLElement[]>,
 ): Node {
   const text = source.slice(slice.start, slice.end);
-  if (slice.findings.length === 0) {
+  if (slice.covering.length === 0) {
     return document.createTextNode(text);
   }
 
-  // Build from the inside out: the innermost finding wraps the text, and each
+  // Build from the inside out: the innermost range wraps the text, and each
   // outer one wraps that.
   let node: Node = document.createTextNode(text);
-  for (let i = slice.findings.length - 1; i >= 0; i--) {
-    const index = slice.findings[i];
-    const finding = findings[index];
+  for (let i = slice.covering.length - 1; i >= 0; i--) {
+    const markable = markables[slice.covering[i]];
     const mark = document.createElement("span");
-    const severity = severityOf(finding);
-    mark.className = `mark mark-${severity}${isStretch(finding) ? " is-stretch" : ""}`;
-    mark.dataset.finding = finding.id;
+    mark.className = markable.className;
+    mark.dataset.finding = markable.id;
     mark.tabIndex = 0;
     mark.setAttribute("role", "button");
-    mark.setAttribute(
-      "aria-label",
-      `Finding ${index + 1}: ${finding.message} (${finding.ruleId}, ${finding.severity})`,
-    );
+    mark.setAttribute("aria-label", markable.label);
     mark.append(node);
 
     // The superscript goes on the LAST slice of the finding, so a phrase split
     // across markup is numbered once, at its end.
-    const last = finding.segments[finding.segments.length - 1];
-    if (last && slice.end >= last.end) {
+    const last = markable.segments[markable.segments.length - 1];
+    if (markable.badge !== null && last && slice.end >= last.end) {
       const badge = document.createElement("sup");
       badge.className = "mark-index";
-      badge.textContent = String(index + 1);
+      badge.textContent = markable.badge;
       badge.setAttribute("aria-hidden", "true");
       mark.append(badge);
     }
 
-    const list = marks.get(finding.id) ?? [];
+    const list = marks.get(markable.id) ?? [];
     list.push(mark);
-    marks.set(finding.id, list);
+    marks.set(markable.id, list);
     node = mark;
   }
   return node;

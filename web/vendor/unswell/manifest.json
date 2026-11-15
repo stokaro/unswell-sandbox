@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.4-113-g8a56d13f2ac0",
-  "unswellCommit": "8a56d13f2ac0432dc1704e12453c4973290ff3a9",
-  "unswellCommitDate": "2026-10-08T21:49:58+02:00",
-  "goVersion": "go1.27.1",
-  "builtAt": "2026-10-08T19:55:42Z",
+  "unswellVersion": "v0.1.0-alpha.12",
+  "unswellCommit": "4109f062209064e3535792c7245de77d3d808954",
+  "unswellCommitDate": "2026-11-14T18:10:55+01:00",
+  "goVersion": "go1.27.3",
+  "builtAt": "2026-11-15T00:16:17Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "5e39b8da187bea426b79599da305c6070f85162be15515d35d88aeeaa862542a",
-    "bytes": 50848323,
-    "gzipBytes": 22427477
+    "sha256": "2336947d68b5c6f00f88694a354385f762c428f403e4a09ac01965d39b70ad3a",
+    "bytes": 59266149,
+    "gzipBytes": 24181443
   },
   "rules": [
     {
@@ -60,9 +60,9 @@
     },
     {
       "id": "filler.instruction-scaffolding",
-      "version": "15",
+      "version": "19",
       "group": "rhetorical-patterns",
-      "severity": "warning",
+      "severity": "note",
       "summary": "State the supported action directly; preserve its conditions and optionality."
     },
     {
@@ -109,10 +109,17 @@
     },
     {
       "id": "filler.unscoped-assurance",
-      "version": "10",
+      "version": "12",
+      "group": "rhetorical-patterns",
+      "severity": "note",
+      "summary": "State the behavior, scope or evidence behind this quality claim."
+    },
+    {
+      "id": "filler.unspecified-update",
+      "version": "1",
       "group": "rhetorical-patterns",
       "severity": "warning",
-      "summary": "State the behavior, scope or evidence behind this quality claim."
+      "summary": "Identify the assets and version behind this update announcement."
     },
     {
       "id": "filler.weak-intensifiers",
@@ -129,11 +136,25 @@
       "summary": "Consider a shorter phrase that preserves the condition or meaning."
     },
     {
+      "id": "format.decorative-emoji",
+      "version": "1",
+      "group": "readability",
+      "severity": "warning",
+      "summary": "Remove the decorative emoji from this heading or list item."
+    },
+    {
       "id": "format.em-dash-density",
       "version": "1",
       "group": "readability",
       "severity": "warning",
       "summary": "Em dashes exceed the selected local density; punctuation can be intentional."
+    },
+    {
+      "id": "format.em-dash-frequency",
+      "version": "1",
+      "group": "readability",
+      "severity": "warning",
+      "summary": "This document leans on em dashes; replace most of them with commas, periods, or parentheses."
     },
     {
       "id": "format.list-fragmentation",
@@ -165,9 +186,9 @@
     },
     {
       "id": "hype.vague-praise",
-      "version": "1",
+      "version": "2",
       "group": "inflation",
-      "severity": "warning",
+      "severity": "note",
       "summary": "Replace general praise with a specific property or measured result."
     },
     {
@@ -193,9 +214,9 @@
     },
     {
       "id": "repetition.adjacent-word",
-      "version": "3",
+      "version": "4",
       "group": "repetition",
-      "severity": "warning",
+      "severity": "note",
       "summary": "This word occurs twice in succession; check for an accidental duplicate."
     },
     {
@@ -214,7 +235,7 @@
     },
     {
       "id": "repetition.exact-sentence",
-      "version": "3",
+      "version": "4",
       "group": "repetition",
       "severity": "warning",
       "summary": "This sentence is repeated; consider whether every occurrence is needed."
@@ -235,7 +256,7 @@
     },
     {
       "id": "repetition.near-sentence",
-      "version": "3",
+      "version": "4",
       "group": "repetition",
       "severity": "warning",
       "summary": "These sentences have high lexical overlap; check for repeated information."
@@ -249,7 +270,7 @@
     },
     {
       "id": "repetition.paragraph-openers",
-      "version": "3",
+      "version": "4",
       "group": "repetition",
       "severity": "warning",
       "summary": "Several paragraphs repeat the same opening formula."
@@ -284,7 +305,7 @@
     },
     {
       "id": "repetition.sentence-openers",
-      "version": "2",
+      "version": "3",
       "group": "repetition",
       "severity": "warning",
       "summary": "Several sentences repeat the same opening; consider removing repeated setup."
@@ -333,9 +354,9 @@
     },
     {
       "id": "syntax.long-sentence",
-      "version": "1",
+      "version": "2",
       "group": "syntax-load",
-      "severity": "warning",
+      "severity": "note",
       "summary": "Consider splitting this long sentence without losing its conditions."
     },
     {

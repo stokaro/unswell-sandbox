@@ -33,6 +33,9 @@ import (
 //     Finding, so it is recovered by extracting the same source under the same
 //     policy and matching blocks to findings by span. See [blockContexts].
 type payload struct {
+	// Kind tells the host which answer this is. An analysis answers with a
+	// "report"; a fix answers with a "fix", see fix.go.
+	Kind       string        `json:"kind"`
 	Profile    string        `json:"profile"`
 	Format     string        `json:"format"`
 	Name       string        `json:"name"`
@@ -47,6 +50,10 @@ type payload struct {
 	// is separate from Units so the page can say why no paragraph carries an
 	// estimate, which a missing badge cannot say on its own.
 	Origin originChannelStamp `json:"origin"`
+	// Index is the engine's AI-sounding index of a Markdown page, with the
+	// words of the CLI's report. It is absent for the other formats, where the
+	// engine measures none. See index.go.
+	Index *indexStamp `json:"aiSounding,omitempty"`
 	// Incomplete is the engine's own word for a run that did not cover
 	// everything it was asked to. The page says so rather than presenting a
 	// partial report as a whole one.
@@ -158,6 +165,7 @@ func buildPayload(
 	channel originChannelStamp,
 ) (string, error) {
 	out := payload{
+		Kind:       "report",
 		Profile:    profile,
 		Format:     string(source.Format),
 		Name:       source.Name,
@@ -196,6 +204,7 @@ func buildPayload(
 		}
 		out.MaxIndex = doc.Maximum
 	}
+	out.Index = projectIndex(result, cliReport(result))
 
 	contexts := blockContexts(ctx, engine, source)
 

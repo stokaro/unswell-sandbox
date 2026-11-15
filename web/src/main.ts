@@ -14,7 +14,7 @@
  */
 
 import { EngineStrip } from "./engine-strip.ts";
-import type { HostEvent, Report, WorkerRequest } from "./protocol.ts";
+import type { FixResult, HostEvent, Report, WorkerRequest } from "./protocol.ts";
 import { ByteText, renderReport } from "./render.ts";
 import { renderRail } from "./rail.ts";
 
@@ -74,6 +74,12 @@ let current: { report: Report; source: ByteText } | null = null;
 let activeFinding: string | null = null;
 let marks = new Map<string, HTMLElement[]>();
 let notes = new Map<string, HTMLElement>();
+/**
+ * The last fix, with the text it was asked about. The rail reports it for as
+ * long as the box holds the text the fix produced, and that same condition is
+ * what makes it undoable: any other text is not the one its numbers describe.
+ */
+let lastFix: { fix: FixResult; original: string } | null = null;
 
 /* ---------------------------------------------------------------------------
  * The Worker
@@ -107,6 +113,11 @@ worker.addEventListener("message", (event: MessageEvent<HostEvent>) => {
       if (message.runId !== inFlight) return;
       inFlight = 0;
       showReport(message.report);
+      return;
+    case "fixed":
+      if (message.runId !== inFlight) return;
+      inFlight = 0;
+      applyFix(message.fix);
       return;
     case "failed":
       if (message.runId !== inFlight) return;
@@ -177,12 +188,58 @@ function showReport(report: Report): void {
   editView.hidden = true;
   current = { report, source };
 
-  notes = renderRail(railBody, report).notes;
+  // A fix is reported only beside the text it produced. Anything typed since
+  // is a different text, and the line would describe a page that is gone.
+  if (lastFix !== null && lastFix.fix.text !== input.value) lastFix = null;
+  const fixNote = lastFix === null
+    ? null
+    : { fix: lastFix.fix, undoable: lastFix.fix.changed && lastFix.original !== input.value };
+  notes = renderRail(railBody, report, fixNote).notes;
   railCount.textContent = `${report.findings.length} · ${report.profile}`;
   strip.analyzed(report.durationMs);
   document.body.classList.remove("is-analyzing");
   pane.scrollTop = 0;
   updateControls();
+}
+
+/**
+ * Takes the answer to a fix.
+ *
+ * The fixed text replaces the text in the box and is analyzed at once, so the
+ * report on screen is always a report of what the box holds. A fix that
+ * replaced nothing leaves the text alone and only says so.
+ */
+function applyFix(fix: FixResult): void {
+  document.body.classList.remove("is-analyzing");
+  const original = input.value;
+  lastFix = { fix, original };
+  if (!fix.changed) {
+    strip.analyzed(fix.durationMs);
+    if (current !== null) showReport(current.report);
+    else updateControls();
+    return;
+  }
+  input.value = fix.text;
+  toEditing();
+  analyze();
+}
+
+/** Puts back the text the last fix was asked about, and analyzes it. */
+function undoFix(): void {
+  if (lastFix === null || inFlight !== 0) return;
+  input.value = lastFix.original;
+  lastFix = null;
+  toEditing();
+  analyze();
+}
+
+/** Asks the engine for the replacements `unswell fix` makes on the analyzed text. */
+function requestFix(includeLow: boolean): void {
+  if (!engineReady || inFlight !== 0 || current === null) return;
+  inFlight = ++runId;
+  document.body.classList.add("is-analyzing");
+  strip.analyzing();
+  send({ type: "fix", runId: inFlight, text: current.source.text, profile, format, includeLow });
 }
 
 function showRunFailure(message: string): void {
@@ -386,7 +443,13 @@ reportView.addEventListener("keydown", (event) => {
 });
 
 railBody.addEventListener("pointerover", (event) => focusFinding(findingAt(event.target)));
-railBody.addEventListener("click", (event) => focusFinding(findingAt(event.target), "mark"));
+railBody.addEventListener("click", (event) => {
+  const action = (event.target as HTMLElement | null)?.closest<HTMLElement>("[data-action]")?.dataset.action;
+  if (action === "fix") return requestFix(false);
+  if (action === "fix-low") return requestFix(true);
+  if (action === "undo-fix") return undoFix();
+  focusFinding(findingAt(event.target), "mark");
+});
 railBody.addEventListener("focusin", (event) => focusFinding(findingAt(event.target), "mark"));
 
 /* ---------------------------------------------------------------------------

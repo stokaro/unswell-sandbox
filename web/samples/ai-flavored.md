@@ -23,6 +23,16 @@ a writer or a reader, the tool fits. It not only retries but also backs off. It
 not only checks but also validates. The result? A better experience. The
 benefit? A brighter future.
 
+## ✨ Key features
+
+- **Retries:** the client repeats a failed request — up to the limit you set.
+- **Backoff:** every wait is longer than the last — one second, then two, then four.
+- 🚀 **Speed:** request → retry → success, with no extra code.
+- Timeout — the longest wait for one attempt.
+
+The first request fails — the client sends it again. The whole flow stays
+simple — and safe.
+
 ## Summary
 
 We perform an evaluation of the implementation before the release, and the

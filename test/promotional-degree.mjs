@@ -1,11 +1,13 @@
-// Verify qualitative degree, ranking advice, and source spans in the actual WASM.
+// The page follows the CLI: a rule that is enabled only by name reports nothing here.
+// `filler.unscoped-assurance` is such a rule, in the default and in the strict profile.
 import assert from "node:assert/strict";
 import { boot } from "./harness.mjs";
 
 const runtime = await boot();
 assert.equal(runtime.info.commit, runtime.manifest.unswellCommit);
 const id = "filler.unscoped-assurance";
-assert.equal(runtime.manifest.rules.find((rule) => rule.id === id).version, "10");
+// The rule is still in the catalog that the page announces.
+assert.equal(runtime.manifest.rules.find((rule) => rule.id === id).version, "12");
 const positives = [
   ["markdown", "## Blazingly fast", "Blazingly fast"],
   ["markdown", "Café 🙂. The engine is heavily optimized for request batching.", "heavily optimized"],
@@ -24,32 +26,17 @@ const controls = [
 ];
 
 for (const profile of ["technical", "strict"]) {
-  for (const [format, source, matched] of positives) {
+  for (const [format, source] of positives) {
     const report = await runtime.analyze(source, profile, format);
     assert.equal(report.incomplete, false, `${profile}: ${format}`);
-    const findings = report.findings.filter((finding) => finding.ruleId === id);
-    assert.equal(findings.length, 1, source);
-    const finding = findings[0];
-    assert.equal(finding.ruleVersion, "10");
-    assert.equal(Buffer.from(source).subarray(finding.start, finding.end).toString(), matched);
-    assert.equal(finding.start, Buffer.from(source).lastIndexOf(Buffer.from(matched)));
-    assert.match(finding.suggestion, /Verify/);
-    assert.match(finding.suggestion, /uncertainty/);
+    assert.deepEqual(report.findings.filter((finding) => finding.ruleId === id), [], `${profile}: ${source}`);
   }
   for (const source of controls) {
     const report = await runtime.analyze(source, profile);
     assert.equal(report.incomplete, false);
     assert.deepEqual(report.findings.filter((finding) => finding.ruleId === id), [], source);
   }
-  const mixed = await runtime.analyze(
-    "The client is blazingly fast. Reliability is ensured by rigorous testing.", profile);
-  assert.equal(mixed.incomplete, false);
-  const findings = mixed.findings.filter((finding) => finding.ruleId === id);
-  assert.equal(findings.length, 1);
-  assert.equal(findings[0].related.length, 1);
-  assert.match(findings[0].suggestion, /Verify their basis before removing or weakening any claim/);
-  assert.match(findings[0].suggestion, /established commitments/);
-  console.log(`promotional degree: ${profile}: five source probes, seven controls, and mixed verification passed`);
+  console.log(`promotional degree: ${profile}: the rule enabled by name stays silent on five probes and seven controls`);
 }
 assert.deepEqual(runtime.panics, []);
 console.log(`promotional degree: passed on ${runtime.info.commit}`);
