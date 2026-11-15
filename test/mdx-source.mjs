@@ -11,13 +11,16 @@ for (const profile of ["technical", "strict"]) {
   const report = await runtime.analyze(sample, profile, "mdx");
   assert.equal(report.incomplete, false);
   assert.equal(report.format, "mdx");
-  assert.equal(report.findings.length, 1);
-  const finding = report.findings[0];
-  assert.equal(finding.ruleId, "filler.instruction-scaffolding");
-  assert.equal(finding.ruleVersion, "15");
-  assert.equal(Buffer.from(sample).subarray(finding.start, finding.end).toString(), sentence);
-  assert.match(finding.message, /support and helpfulness clauses/);
-  assert.match(finding.suggestion, /modality of both clauses/);
+  // The rule ships off since alpha.10; the strict profile keeps it.
+  assert.equal(report.findings.length, profile === "strict" ? 1 : 0);
+  if (profile === "strict") {
+    const finding = report.findings[0];
+    assert.equal(finding.ruleId, "filler.instruction-scaffolding");
+    assert.equal(finding.ruleVersion, "19");
+    assert.equal(Buffer.from(sample).subarray(finding.start, finding.end).toString(), sentence);
+    assert.match(finding.message, /support and helpfulness clauses/);
+    assert.match(finding.suggestion, /modality of both clauses/);
+  }
   const source = 'export const marker = (globalThis.__unswellMdxRan = true, "Certainly! Here is the guide.");\n\nThe client fetches records.\n';
   const control = await runtime.analyze(source, profile, "mdx");
   assert.equal(control.incomplete, false);

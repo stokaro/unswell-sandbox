@@ -29,7 +29,7 @@ const expectations = [
   {
     file: "ai-flavored.md",
     format: "markdown",
-    minFindings: 12,
+    minFindings: 11,
     // The page describes this one as failing the gate under both profiles.
     gate: { technical: false, strict: false },
   },

@@ -40,15 +40,17 @@ for (const profile of ["technical", "strict"]) {
 
   const actual = await runtime.analyze(page, profile);
   assert.equal(actual.incomplete, false);
-  assert.equal(actual.findings.length, profile === "strict" ? 7 : 5);
-  // Contrast frequency is opt-in; the default keeps the actual construction notes.
+  // The page has four em dashes in 391 prose words. The default rules report
+  // that once; the strict profile adds the density rule and long sentences.
+  assert.deepEqual(actual.findings.map((f) => f.ruleId).sort(), profile === "strict"
+    ? ["format.em-dash-density", "format.em-dash-density", "format.em-dash-frequency",
+      "syntax.long-sentence", "syntax.long-sentence"]
+    : ["format.em-dash-frequency"]);
+  // Contrast frequency and document metadiscourse are opt-in by name.
   assert.equal(actual.findings.some((f) => f.ruleId === "syntax.paired-contrast-density"), false);
+  assert.equal(actual.findings.some((f) => f.ruleId === metaId), false);
   assert.equal(actual.gate.passed, true);
-  assert.equal(actual.maxIndex, 8);
-  const meta = actual.findings.filter((f) => f.ruleId === metaId);
-  assert.equal(meta.length, 1);
-  assert.equal(Buffer.from(page).subarray(meta[0].start, meta[0].end).toString(), "This\npage defines all four");
-  assert.equal(meta[0].points, 0);
+  assert.equal(actual.maxIndex, profile === "strict" ? 1.32 : 0);
   assert.equal(actual.findings.filter((f) => f.ruleId === reframeId).length, 0);
 
   const variants = await runtime.analyze(
@@ -69,7 +71,7 @@ for (const profile of ["technical", "strict"]) {
     assert.equal(result.findings.length, 0, `${profile}: ${control}`);
     assert.equal(result.gate.passed, true);
   }
-  console.log(`frames: ${profile}: three pairs with six clause locations; Ptah ${actual.findings.length} findings, index 8; controls clean`);
+  console.log(`frames: ${profile}: three pairs with six clause locations; Ptah ${actual.findings.length} findings, index ${actual.maxIndex}; controls clean`);
 }
 assert.deepEqual(runtime.panics, []);
 console.log(`frames: passed on ${runtime.info.commit}`);

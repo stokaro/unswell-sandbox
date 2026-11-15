@@ -98,7 +98,7 @@ test-usefulness-purpose:
 test-mdx-source:
 	node test/mdx-source.mjs
 
-# Keep qualitative degree and ranking advice safe in every browser source format.
+# A rule that is enabled only by name stays silent on the page, as in the CLI.
 test-promotional-degree:
 	node test/promotional-degree.mjs
 
