@@ -22,4 +22,5 @@ AI-sounding index: 100 of 100 (high; marks 100, rhythm 54) in playground.md: 5 e
   playground.md:34:8: em dash; write a comma
 `unswell fix --write` makes the replacements named above. A stock word needs your own words.
 A run of sentences has no replacement that a command can make. Rewrite one or two of its sentences, and keep what they say.
+Do not add an em dash anywhere: an em dash is one of the marks that this report counts.
 The index is the higher of two readings: the marks that people remove when they clean AI-sounding wording out of documentation, and runs of sentences that look alike. It is not a probability and does not say who wrote a page.
