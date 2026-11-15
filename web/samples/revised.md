@@ -7,7 +7,7 @@ a ceiling the caller sets.
 ## Why it matters
 
 A connection to our billing service fails about once in four thousand requests.
-Without a retry, that rate reaches a customer as a failed checkout. With one, it
+Without a retry, that rate reaches a customer as a failed checkout; with one, it
 reaches a log line.
 
 Backoff matters as much as the retry itself. Ten clients that all retry after
@@ -20,5 +20,5 @@ Only idempotent verbs are retried. A POST that created a row on the first
 attempt would create a second row on the next, and the client cannot tell the
 two cases apart from a timeout.
 
-The budget is per request, not per process. A caller that sets four attempts and
-a two second ceiling waits at most seven seconds before the error surfaces.
+Budgets are per request, not per process: a caller that sets four attempts and a
+two second ceiling waits at most seven seconds before the error surfaces.

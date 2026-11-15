@@ -69,26 +69,29 @@ function reportAt(level) {
       { id: 0, start: label.start + 2, end: range("retries.").end, score: 0, words: 8 },
       { id: 1, start: range("A seamless").start, end: range("end.").end, score: 0, words: 3 },
     ],
+    // The engine lists the marks of a reading above low. At the level low the report carries none, and says how
+    // many marks with a replacement it left out.
     aiSounding: {
       status: "available",
-      index: level === "low" ? 12 : 64,
+      index: level === "low" ? 31 : 64,
       level,
+      marksReading: level === "low" ? 31 : 64,
+      rhythmReading: 12,
       words: 200,
       summary: "1 em dash, 1 stock word, 1 list item that starts with a bold label.",
       signals: [],
-      counted: 3,
-      fixable: 2,
-      advice: "`unswell fix --write` makes the replacements named above. A stock word needs your own words.",
-      about: "The index counts marks. It is not a probability.",
-      marks: [
+      counted: level === "low" ? 0 : 3,
+      fixable: level === "low" ? 0 : 2,
+      fixableUnlisted: level === "low" ? 2 : 0,
+      advice: level === "low" ? [] : ["`unswell fix --write` makes the replacements named above. A stock word needs your own words."],
+      about: "The index is the higher of two readings. It is not a probability.",
+      marks: level === "low" ? [] : [
         { signal: "bold-label-in-list", ...label, line: 1, column: 3,
-          note: level === "low" ? undefined : "list item that starts with a bold label; remove the bold",
-          fix: { ...label, text: "Label:" } },
+          note: "list item that starts with a bold label; remove the bold", fix: { ...label, text: "Label:" } },
         { signal: "em-dash", ...dash, line: 1, column: 31,
-          note: level === "low" ? undefined : "em dash; write a comma",
-          fix: { start: dash.start - 1, end: dash.end + 1, text: ", " } },
+          note: "em dash; write a comma", fix: { start: dash.start - 1, end: dash.end + 1, text: ", " } },
         { signal: "stock-word", ...word, line: 3, column: 3, word: "seamless",
-          note: level === "low" ? undefined : 'stock word "seamless"; say what the thing does, or drop the word' },
+          note: 'stock word "seamless"; say what the thing does, or drop the word' },
       ],
     },
   };
@@ -129,10 +132,36 @@ test("the rail lists each mark of the index in the CLI's words and offers the fi
   const card = elements.find((node) => node.className === "index-card");
   assert.equal(card.dataset.level, "elevated");
   assert.equal(elements.find((node) => node.className === "index-value").textContent, "64 / 100");
+  assert.equal(elements.find((node) => node.className === "index-readings").textContent, "marks 64 · rhythm 12");
   const fix = elements.find((node) => node.dataset?.action === "fix");
   assert.equal(fix.textContent, "Fix 2 marks");
   assert.equal(elements.some((node) => node.dataset?.action === "undo-fix"), false);
   assert.equal(elements.find((node) => node.className === "rail-section").textContent, "Marks of the index · 3");
+});
+
+test("a run of sentences is drawn as a stretch and listed without a replacement", (t) => {
+  fixtureDOM(t);
+  const report = reportAt("elevated");
+  const first = range("- **Label:** the client waits — then it retries.").start + 2;
+  report.aiSounding = {
+    ...report.aiSounding, index: 88, level: "high", marksReading: 23, rhythmReading: 88, counted: 1, fixable: 0, fixableUnlisted: 0,
+    summary: "1 run of plain sentences.",
+    advice: ["A run of sentences has no replacement that a command can make. Rewrite one or two of its sentences, and keep what they say."],
+    marks: [{ signal: "plain-sentence-run", start: first, end: range("retries.").end, line: 1, column: 3, sentences: 4,
+      note: "4 plain sentences in a row; say it as you would to a colleague: join two of them" }],
+  };
+  const rendered = renderReport(new ByteText(text), report);
+  const run = rendered.marks.get(indexMarkId(0));
+  assert.equal(run.every((mark) => mark.className === "mark mark-ai is-stretch"), true);
+  // The run starts at the opening asterisks, before the paragraph: it is drawn on both sides of that boundary.
+  assert.equal(run.map((mark) => mark.textContent).join(""), "**Label:** the client waits — then it retries.");
+
+  const elements = all(renderInto(report, null));
+  assert.equal(elements.find((node) => node.className === "index-readings").textContent, "marks 23 · rhythm 88");
+  // Nothing on the page has a replacement, so the card offers no fix.
+  assert.equal(elements.some((node) => node.dataset?.action === "fix" || node.dataset?.action === "fix-low"), false);
+  assert.equal(elements.some((node) => node.textContent?.startsWith("A run of sentences has no replacement")), true);
+  assert.equal(elements.find((node) => node.className === "note note-ai").textContent.startsWith("1:34 plain sentences in a row"), true);
 });
 
 test("a page at the level low shows its number and none of its marks", (t) => {

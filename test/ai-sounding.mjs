@@ -4,7 +4,7 @@
  * The page shows three things here that a visitor can compare with the tool
  * they install: the index of a Markdown page, what to do at each mark, and the
  * text after the replacements of `unswell fix`. The fixtures under
- * test/fixtures/cli-v0.1.0-alpha.12 are what the published binary wrote for the
+ * test/fixtures/cli-v0.1.0-alpha.13 are what the published binary wrote for the
  * Markdown sample, and every one of the three is compared with them.
  *
  * The words beside a mark are lines of the CLI's own text report, cut out of
@@ -19,12 +19,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { boot, repoRoot } from "./harness.mjs";
 
-const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.12");
+const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.13");
 const read = (path) => readFile(path, "utf8");
 
 const runtime = await boot();
-assert.equal(runtime.info.version, "v0.1.0-alpha.12",
-  "the fixtures are the output of the alpha.12 binary; make them again for another pin");
+assert.equal(runtime.info.version, "v0.1.0-alpha.13",
+  "the fixtures are the output of the alpha.13 binary; make them again for another pin");
 
 const sample = await read(join(repoRoot, "web/samples/ai-flavored.md"));
 const bytes = Buffer.from(sample);
@@ -34,11 +34,15 @@ const cliFixed = await read(join(fixtures, "ai-flavored.fixed.md"));
 
 /* ---------- the index is the CLI's index ---------- */
 
-const header = /^AI-sounding index: (\d+) of 100 \((low|elevated|high)\) in playground\.md: (.*)$/.exec(cliIndex[0]);
+const header = /^AI-sounding index: (\d+) of 100 \((low|elevated|high); marks (\d+), rhythm (\d+)\) in playground\.md: (.*)$/
+  .exec(cliIndex[0]);
 assert.ok(header, `the fixture starts with the index line: ${cliIndex[0]}`);
 const about = cliIndex[cliIndex.length - 1];
-const advice = cliIndex[cliIndex.length - 2];
-const cliMarks = cliIndex.slice(1, -2);
+// The lines of the marks start with two spaces and the name of the page; the lines below them say what a command
+// can replace and what it cannot.
+const cliMarks = cliIndex.slice(1, -1).filter((line) => line.startsWith("  playground.md:"));
+const advice = cliIndex.slice(1, -1).filter((line) => !line.startsWith("  "));
+assert.deepEqual(advice.map((line) => line.split(" ")[0]), ["`unswell", "A"], "one line about the command and one about runs");
 
 for (const profile of ["technical", "strict"]) {
   const report = await runtime.analyze(sample, profile);
@@ -48,8 +52,11 @@ for (const profile of ["technical", "strict"]) {
   assert.equal(index.status, "available");
   assert.equal(index.index, Number(header[1]), `${profile}: the index is the CLI's`);
   assert.equal(index.level, header[2], `${profile}: the level is the CLI's`);
-  assert.equal(index.summary, header[3], `${profile}: the counts are the CLI's line`);
-  assert.equal(index.advice, advice);
+  assert.equal(index.marksReading, Number(header[3]), `${profile}: the first reading is the CLI's`);
+  assert.equal(index.rhythmReading, Number(header[4]), `${profile}: the second reading is the CLI's`);
+  assert.equal(index.index, Math.max(index.marksReading, index.rhythmReading));
+  assert.equal(index.summary, header[5], `${profile}: the counts are the CLI's line`);
+  assert.deepEqual(index.advice, advice);
   assert.equal(index.about, about);
   assert.equal(index.unlisted, undefined);
 
@@ -59,8 +66,10 @@ for (const profile of ["technical", "strict"]) {
     cliMarks,
     `${profile}: every mark says what the CLI says at the same place`,
   );
+  // Both readings of this page are above low, so the marks of both are listed.
   assert.equal(index.counted, index.signals.reduce((sum, signal) => sum + signal.count, 0));
   assert.equal(index.counted, cliMarks.length);
+  assert.equal(index.fixableUnlisted, 0);
   assert.equal(index.fixable, index.marks.filter((mark) => mark.fix).length);
 
   for (const mark of index.marks) {
@@ -73,8 +82,11 @@ for (const profile of ["technical", "strict"]) {
       assert.ok(mark.fix.start <= mark.start && mark.fix.end >= mark.end,
         `${profile}: the replacement at ${mark.line}:${mark.column} covers its mark`);
       assert.ok(mark.fix.start >= 0 && mark.fix.end <= bytes.length);
+    } else if (mark.sentences) {
+      assert.ok(mark.signal.endsWith("-run") && mark.sentences >= 2, "a run of sentences has no replacement");
+      assert.match(mark.note, new RegExp(`^${mark.sentences} (plain )?sentences in a row`));
     } else {
-      assert.equal(mark.signal, "stock-word", "in this sample only a stock word has no replacement");
+      assert.equal(mark.signal, "stock-word", "of the other marks only a stock word has no replacement");
     }
   }
   const marked = (signal) => index.marks.filter((mark) => mark.signal === signal)
@@ -101,13 +113,16 @@ for (const profile of ["technical", "strict"]) {
   const after = await runtime.analyze(fixed.text, profile);
   assert.equal(fixed.after, after.aiSounding.index, `${profile}: the index after is the index of the fixed text`);
   assert.equal(after.aiSounding.fixable, 0, `${profile}: no mechanical replacement is left`);
-  assert.deepEqual(fixed.left, { "stock-word": after.aiSounding.marks.length });
+  const stay = {};
+  for (const mark of after.aiSounding.marks) stay[mark.signal] = (stay[mark.signal] ?? 0) + 1;
+  assert.deepEqual(fixed.left, stay, `${profile}: what is left for a person is what the fixed page lists`);
+  assert.equal(stay["stock-word"], 7);
 
   // A second fix has nothing to replace and returns the same text.
   const again = await runtime.fix(fixed.text, profile, "markdown", false);
   assert.equal(again.changed, false);
   assert.equal(again.text, fixed.text);
-  assert.match(again.summary, /nothing to replace\. Left for you: 7 stock words\.$/);
+  assert.match(again.summary, /nothing to replace\. Left for you: 7 stock words, \d+ runs? of plain sentences/);
   console.log(`ai-sounding: ${profile}: fix ${fixed.before} -> ${fixed.after}, the CLI's text and line`);
 }
 
@@ -117,15 +132,16 @@ const revision = await read(join(repoRoot, "web/samples/revised.md"));
 const quiet = await runtime.analyze(revision);
 assert.equal(quiet.aiSounding.status, "available");
 assert.equal(quiet.aiSounding.level, "low");
-assert.equal(quiet.aiSounding.marks.every((mark) => !mark.note), true,
-  "the CLI lists no marks at the level low, so no mark carries its words");
+assert.equal(quiet.aiSounding.marks.length, 0, "the CLI lists no marks of a reading at the level low");
 
 // One em dash in about 900 prose words: the index counts it and stays low.
 const dash = "The client waits for the server — then it sends the request again.";
 const lowPage = `${Array.from({ length: 5 }, () => revision).join("\n")}\n${dash}\n`;
 const low = await runtime.analyze(lowPage);
 assert.equal(low.aiSounding.level, "low", `one dash in ${low.aiSounding.words} words stays at the level low`);
-assert.equal(low.aiSounding.fixable, 1);
+assert.equal(low.aiSounding.marks.length, 0);
+assert.equal(low.aiSounding.fixable, 0);
+assert.equal(low.aiSounding.fixableUnlisted, 1, "the dash has a replacement and is not listed");
 const left = await runtime.fix(lowPage, "technical", "markdown", false);
 assert.equal(left.leftLow, true);
 assert.equal(left.changed, false);
@@ -136,6 +152,31 @@ assert.equal(included.changed, true);
 assert.equal(included.text.includes("—"), false);
 assert.deepEqual(included.removed, { "em-dash": 1 });
 console.log("ai-sounding: a low page is left as it is, and --include-low replaces its marks");
+
+/* ---------- a page without the marks is read by the rhythm of its sentences ---------- */
+
+const even = `# Client\n\n${"The server reads the request and sends the response to the client. ".repeat(16)}\n`;
+const rhythm = (await runtime.analyze(even)).aiSounding;
+assert.equal(rhythm.marksReading, 23);
+assert.ok(rhythm.rhythmReading >= 70, `rhythm ${rhythm.rhythmReading}`);
+assert.equal(rhythm.index, rhythm.rhythmReading);
+assert.equal(rhythm.level, "high");
+assert.deepEqual(rhythm.marks.map((mark) => [mark.signal, mark.sentences, mark.line, mark.column]),
+  [["plain-sentence-run", 16, 3, 1], ["subject-opener-run", 16, 3, 1]]);
+assert.equal(rhythm.marks[0].note, "16 plain sentences in a row; say it as you would to a colleague: join two of them, " +
+  "use a contraction, put an aside in parentheses, or start one with And or But");
+assert.equal(rhythm.marks[1].note, "16 sentences in a row open with their subject; open one of them with its condition, its time, or its reason");
+assert.equal(rhythm.fixable, 0);
+assert.equal(rhythm.fixableUnlisted, 0);
+assert.equal(rhythm.advice.length, 1);
+assert.match(rhythm.advice[0], /^A run of sentences has no replacement that a command can make\./);
+assert.equal(rhythm.summary, "1 run of plain sentences, 1 run of sentences that open with their subject.");
+// The command has nothing to replace on such a page and leaves it as it is.
+const untouchedRhythm = await runtime.fix(even, "technical", "markdown", false);
+assert.equal(untouchedRhythm.leftLow, true);
+assert.equal(untouchedRhythm.text, even);
+assert.match(untouchedRhythm.summary, /marks low: left as it is\.$/);
+console.log(`ai-sounding: a page of even sentences is ${rhythm.level} by its rhythm (${rhythm.rhythmReading}), and the fix leaves it`);
 
 /* ---------- the index needs a Markdown page of 150 prose words ---------- */
 
