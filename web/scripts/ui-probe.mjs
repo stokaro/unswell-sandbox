@@ -322,7 +322,7 @@ async function main() {
   // and whether the button puts the CLI's fixed text into the box.
   const sampleText = await (await fetch(new URL("samples/ai-flavored.md", base))).text();
   const cliFixed = readFileSync(
-    new URL("../../test/fixtures/cli-v0.1.0-alpha.14/ai-flavored.fixed.md", import.meta.url), "utf8");
+    new URL("../../test/fixtures/cli-v0.1.0-alpha.16/ai-flavored.fixed.md", import.meta.url), "utf8");
   const indexState = `JSON.stringify({
     level: document.querySelector(".index-card")?.dataset.level ?? "",
     value: document.querySelector(".index-value")?.textContent ?? "",

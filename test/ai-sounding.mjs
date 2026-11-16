@@ -4,7 +4,7 @@
  * The page shows three things here that a visitor can compare with the tool
  * they install: the index of a Markdown page, what to do at each mark, and the
  * text after the replacements of `unswell fix`. The fixtures under
- * test/fixtures/cli-v0.1.0-alpha.14 are what the published binary wrote for the
+ * test/fixtures/cli-v0.1.0-alpha.16 are what the published binary wrote for the
  * Markdown sample, and every one of the three is compared with them.
  *
  * The words beside a mark are lines of the CLI's own text report, cut out of
@@ -19,12 +19,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { boot, repoRoot } from "./harness.mjs";
 
-const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.14");
+const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.16");
 const read = (path) => readFile(path, "utf8");
 
 const runtime = await boot();
-assert.equal(runtime.info.version, "v0.1.0-alpha.14",
-  "the fixtures are the output of the alpha.14 binary; make them again for another pin");
+assert.equal(runtime.info.version, "v0.1.0-alpha.16",
+  "the fixtures are the output of the alpha.16 binary; make them again for another pin");
 
 const sample = await read(join(repoRoot, "web/samples/ai-flavored.md"));
 const bytes = Buffer.from(sample);
