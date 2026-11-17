@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.17",
-  "unswellCommit": "f34d7f9724d2804cf217f7e4b536fd0fb4924fe7",
-  "unswellCommitDate": "2026-11-16T23:34:02+01:00",
+  "unswellVersion": "v0.1.0-alpha.18",
+  "unswellCommit": "a3693889c088208bda54d782fea4abde415e5a10",
+  "unswellCommitDate": "2026-11-17T12:08:08+01:00",
   "goVersion": "go1.27.3",
-  "builtAt": "2026-11-17T08:55:08Z",
+  "builtAt": "2026-11-17T12:04:58Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "3c21d4ccf3dd783d8b097fc55e9dbb20ffef4c5b20132f616000001c66f8c70d",
-    "bytes": 59296631,
-    "gzipBytes": 24187149
+    "sha256": "5d46effb83c7a3de462014812f3a6e62220cd561aa34eac11a03a32ec18abdbc",
+    "bytes": 59335184,
+    "gzipBytes": 24196493
   },
   "rules": [
     {
@@ -353,6 +353,13 @@
       "summary": "Remove the conversational follow-up offer from this document."
     },
     {
+      "id": "syntax.closing-denial-density",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "Several paragraphs end by saying what something is not; end most of them on what it is or does."
+    },
+    {
       "id": "syntax.long-sentence",
       "version": "2",
       "group": "syntax-load",
@@ -428,6 +435,13 @@
       "group": "inflation",
       "severity": "warning",
       "summary": "Check repeated triads of evaluative modifiers against specific properties."
+    },
+    {
+      "id": "syntax.uniform-register",
+      "version": "1",
+      "group": "rhetorical-patterns",
+      "severity": "warning",
+      "summary": "This page never leaves one formal register: no contraction, no aside in parentheses, no question, and no sentence that opens with And, But, or So. Say one or two things the way you would to a colleague."
     },
     {
       "id": "syntax.whether-preface-density",
