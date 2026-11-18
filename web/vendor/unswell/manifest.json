@@ -1,9 +1,9 @@
 {
-  "unswellVersion": "v0.1.0-alpha.19",
-  "unswellCommit": "fbd3ec7667789d36e8c4aef511e4d4d1a05aa581",
-  "unswellCommitDate": "2026-11-17T17:11:36+01:00",
+  "unswellVersion": "v0.1.0-alpha.20",
+  "unswellCommit": "c60b8cf02c62369f0c095bb5a5d99dfbaf312a31",
+  "unswellCommitDate": "2026-11-18T16:16:56+01:00",
   "goVersion": "go1.27.3",
-  "builtAt": "2026-11-17T17:13:16Z",
+  "builtAt": "2026-11-18T16:11:01Z",
   "wasmExec": {
     "file": "wasm_exec.js",
     "sha256": "0c949f4996f9a89698e4b5c586de32249c3b69b7baadb64d220073cc04acba14",
@@ -11,9 +11,9 @@
   },
   "wasm": {
     "file": "unswell.wasm",
-    "sha256": "4f698c70385c6ea79ef6a32591eae4c6aef26d8dd44e862368cc728206958b79",
-    "bytes": 59335184,
-    "gzipBytes": 24196497
+    "sha256": "e3b141903cbfc03475d477a4166e9cb0e3df2bb71e6dbcd546d6577f9c12314a",
+    "bytes": 59355504,
+    "gzipBytes": 24204517
   },
   "rules": [
     {
@@ -354,7 +354,7 @@
     },
     {
       "id": "syntax.closing-denial-density",
-      "version": "1",
+      "version": "2",
       "group": "rhetorical-patterns",
       "severity": "warning",
       "summary": "Several paragraphs end by saying what something is not; end most of them on what it is or does."
