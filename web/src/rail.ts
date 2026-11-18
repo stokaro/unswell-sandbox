@@ -284,7 +284,10 @@ function renderStats(report: Report): HTMLElement {
 
   const index = document.createElement("div");
   index.className = "stat";
-  index.append(label("Max index"));
+  // The number is the score of the worst sentence or paragraph by the weighted
+  // rules. It is not the AI-sounding index of the page, which has its own card,
+  // so the card says in words what the highest score is the highest of.
+  index.append(label("Highest score"));
   const indexValue = document.createElement("div");
   indexValue.className = "stat-value";
   indexValue.textContent = `${formatScore(report.maxIndex)} / 100`;
@@ -295,7 +298,10 @@ function renderStats(report: Report): HTMLElement {
   fill.dataset.band = band(report.maxIndex);
   fill.style.width = `${Math.max(0, Math.min(100, report.maxIndex))}%`;
   track.append(fill);
-  index.append(indexValue, track);
+  const indexNote = document.createElement("div");
+  indexNote.className = "stat-note";
+  indexNote.textContent = "worst sentence or paragraph";
+  index.append(indexValue, track, indexNote);
 
   stats.append(gate, index);
   return stats;
