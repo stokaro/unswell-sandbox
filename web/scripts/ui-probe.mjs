@@ -200,7 +200,7 @@ async function main() {
   check(r.notes >= 12, "every finding has a note in the rail", `${r.notes} note(s)`);
   check(r.paras >= 5, "the document is segmented into paragraphs", `${r.paras} paragraph(s)`);
   check(r.gate === "FAIL", "the gate card reports the engine's decision", r.gate);
-  check(/\d+(\.\d)? \/ 100/.test(r.index), "the max index card shows a score out of 100", r.index);
+  check(/\d+(\.\d)? \/ 100/.test(r.index), "the highest-score card shows a score out of 100", r.index);
   check(/^\d+ · technical$/.test(r.count), "the rail header counts the findings", r.count);
   check(r.button.trim() === "Edit text", "the primary action becomes Edit text", r.button);
   check(r.firstNote.includes("."), "a note names its rule", r.firstNote);

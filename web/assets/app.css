@@ -877,6 +877,11 @@ body[data-format="python"] .report {
   font-variant-numeric: tabular-nums;
 }
 
+/* A note under the bar of a card stands off from the bar. */
+.stat-track + .stat-note {
+  margin-top: 5px;
+}
+
 .stat-track {
   margin-top: 6px;
   height: 2px;
