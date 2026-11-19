@@ -1,13 +1,13 @@
 # What the published CLI wrote for the Markdown sample
 
-These three files are the output of the published Unswell `v0.1.0-alpha.20`
+These three files are the output of the published Unswell `v0.1.0-alpha.21`
 binary for `web/samples/ai-flavored.md`. `test/ai-sounding.mjs` compares the
 playground with them, so the page cannot report an index, a mark or a fixed
 text that the CLI does not.
 
-The binary is `unswell_0.1.0-alpha.20_darwin_arm64.tar.gz` from the release
+The binary is `unswell_0.1.0-alpha.21_darwin_arm64.tar.gz` from the release
 page, SHA-256
-`3a7da09b8fce8357d463a36d2e1ef8d91517afe57d10101a4943d755021b0296`, as the
+`ae63c21647f839841bbb2cede224a0bb0ada8f5f86bad46036f9115be92be198`, as the
 release's `SHA256SUMS` lists it.
 
 The sample was copied to an empty directory as `playground.md`, the name the
