@@ -488,6 +488,17 @@ a {
   flex: 1 1 auto;
 }
 
+/* What the selected profile runs. Empty until the engine is ready. */
+.profile-note {
+  flex: 0 0 auto;
+  margin: 0;
+  min-height: 1.5em;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+}
+
 .wordcount {
   font-size: 12px;
   color: var(--faint);
@@ -1119,6 +1130,14 @@ body[data-format="python"] .report {
 .note-meta .sev-forbid { color: var(--forbid); }
 .note-meta .sev-warning { color: var(--warning); }
 .note-meta .sev-info { color: var(--info); }
+
+/* A finding that the other profile would not have reported the same way. */
+.note-meta .note-profile {
+  padding: 0 4px;
+  border: 1px solid var(--border-light);
+  border-radius: 3px;
+  color: var(--ink, inherit);
+}
 
 .note-clean {
   display: grid;

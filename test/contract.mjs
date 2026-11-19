@@ -48,6 +48,46 @@ check(
   JSON.stringify(info.profiles) === JSON.stringify(["technical", "strict"]),
   "ready() offers exactly the two profiles the page shows",
 );
+// The page says beside the profile control what each profile runs. It can
+// only say what the engine told it, so the announcement is checked here.
+const catalog = info.rules.map((rule) => rule.id);
+const inCatalogOrder = (ids) => ids.every((id, i) => catalog.includes(id) && (i === 0 || catalog.indexOf(ids[i - 1]) < catalog.indexOf(id)));
+for (const name of info.profiles) {
+  const policy = info.policies?.[name];
+  check(
+    policy && Array.isArray(policy.enabled) && policy.enabled.length > 0 && inCatalogOrder(policy.enabled),
+    `ready() says which rules the ${name} profile runs, in catalog order`,
+    policy ? `${policy.enabled.length} rule(s)` : "no policy",
+  );
+  check(
+    policy && Number.isInteger(policy.paragraphFailAt) && Number.isInteger(policy.sentenceFailAt) &&
+      policy.paragraphFailAt > 0 && policy.paragraphFailAt <= 100 && policy.sentenceFailAt > 0 && policy.sentenceFailAt <= 100,
+    `ready() says at which index the ${name} gate fails a paragraph and a sentence`,
+  );
+  check(
+    policy && policy.forbid.every((id) => policy.enabled.includes(id)),
+    `every rule that fails the ${name} gate on a match is a rule that profile runs`,
+    policy ? `${policy.forbid.length} rule(s)` : "no policy",
+  );
+}
+{
+  const technical = info.policies.technical;
+  const strict = info.policies.strict;
+  check(
+    technical.enabled.every((id) => strict.enabled.includes(id)) && strict.enabled.length > technical.enabled.length,
+    "strict runs every rule that technical runs, and more",
+    `${technical.enabled.length} and ${strict.enabled.length}`,
+  );
+  check(
+    technical.forbid.every((id) => strict.forbid.includes(id)) && strict.forbid.length > technical.forbid.length,
+    "strict fails the gate on every match that technical does, and on more",
+    `${technical.forbid.length} and ${strict.forbid.length}`,
+  );
+  check(
+    strict.paragraphFailAt < technical.paragraphFailAt && strict.sentenceFailAt < technical.sentenceFailAt,
+    "strict fails a paragraph and a sentence at a lower index than technical",
+  );
+}
 check(
   JSON.stringify(info.formats) === JSON.stringify(["markdown", "mdx", "python"]),
   "ready() offers exactly the three formats the page shows",

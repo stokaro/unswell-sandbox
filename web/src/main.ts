@@ -14,7 +14,8 @@
  */
 
 import { EngineStrip } from "./engine-strip.ts";
-import type { FixResult, HostEvent, Report, WorkerRequest } from "./protocol.ts";
+import { describeProfile, describeReport, profileDifference } from "./profiles.ts";
+import type { FixResult, HostEvent, ProfilePolicy, Report, WorkerRequest } from "./protocol.ts";
 import { ByteText, renderReport } from "./render.ts";
 import { renderRail } from "./rail.ts";
 
@@ -54,6 +55,9 @@ const reportView = element("report");
 const pane = element("pane");
 const railBody = element("rail-body");
 const railCount = element("rail-count");
+// A browser can hold the page from before this line existed and fetch the
+// script of today, so the script works without it.
+const profileNote = document.getElementById("profile-note");
 const wordcount = element("wordcount");
 const analyzeButton = element<HTMLButtonElement>("analyze");
 const sampleButton = element<HTMLButtonElement>("load-sample");
@@ -64,11 +68,17 @@ const footerTag = element("footer-tag");
 const strip = new EngineStrip(element("engine"));
 
 let profile: Profile = "technical";
+/** What each profile runs, as the engine announced it. Empty until it is ready. */
+let policies: Record<string, ProfilePolicy> = {};
 let format: Format = "markdown";
 let engineReady = false;
 let engineFailure = "";
 let runId = 0;
 let inFlight = 0;
+/** What the analysis in flight was asked about. An answer to anything else is stale. */
+let asked: { text: string; profile: Profile; format: Format } | null = null;
+/** An analysis was wanted while another was in flight; it runs when that one answers. */
+let queued = false;
 /** The report on screen, and the exact text it describes. */
 let current: { report: Report; source: ByteText } | null = null;
 let activeFinding: string | null = null;
@@ -103,6 +113,7 @@ worker.addEventListener("message", (event: MessageEvent<HostEvent>) => {
       return;
     case "ready":
       engineReady = true;
+      policies = message.info.policies ?? {};
       strip.ready(message.bootMs);
       footerTag.textContent =
         `unswell ${message.info.version} · ${message.info.rules.length} rules · ` +
@@ -112,17 +123,29 @@ worker.addEventListener("message", (event: MessageEvent<HostEvent>) => {
     case "report":
       if (message.runId !== inFlight) return;
       inFlight = 0;
+      if (stale()) {
+        // The text, the profile, or the format changed while this run was on
+        // its way, so its answer describes something the page no longer holds.
+        document.body.classList.remove("is-analyzing");
+        strip.analyzed(message.report.durationMs);
+        updateControls();
+        runQueued();
+        return;
+      }
+      queued = false;
       showReport(message.report);
       return;
     case "fixed":
       if (message.runId !== inFlight) return;
       inFlight = 0;
       applyFix(message.fix);
+      runQueued();
       return;
     case "failed":
       if (message.runId !== inFlight) return;
       inFlight = 0;
       showRunFailure(message.message);
+      runQueued();
       return;
     case "panic":
       // The engine is still running, but something in it faulted. Say so where
@@ -194,7 +217,7 @@ function showReport(report: Report): void {
   const fixNote = lastFix === null
     ? null
     : { fix: lastFix.fix, undoable: lastFix.fix.changed && lastFix.original !== input.value };
-  notes = renderRail(railBody, report, fixNote).notes;
+  notes = renderRail(railBody, report, fixNote, profileDifference(policies, report.profile)).notes;
   railCount.textContent = `${report.findings.length} · ${report.profile}`;
   strip.analyzed(report.durationMs);
   document.body.classList.remove("is-analyzing");
@@ -276,9 +299,23 @@ function updateControls(): void {
     analyzeButton.removeAttribute("title");
   }
   clearButton.disabled = !hasText;
+  describeSelectedProfile();
   sampleButton.textContent = SAMPLES[format].label;
   legendCode.hidden = format === "markdown";
   countWords();
+}
+
+/**
+ * Says under the toolbar what the selected profile runs, and, beside a report,
+ * how many of its findings the other profile would not have reported.
+ */
+function describeSelectedProfile(): void {
+  if (profileNote === null) return;
+  const parts = [describeProfile(policies, profile)];
+  if (current !== null && current.report.profile === profile) {
+    parts.push(describeReport(profileDifference(policies, profile), current.report.findings));
+  }
+  profileNote.textContent = parts.filter((part) => part !== "").join(" ");
 }
 
 function countWords(): void {
@@ -300,10 +337,13 @@ function segmented(id: string, onPick: (value: string) => void): void {
 
 segmented("profile-control", (value) => {
   profile = value as Profile;
-  // A report produced under one profile does not describe the other, so the
-  // page goes back to the text rather than relabeling an old answer.
+  // A report produced under one profile does not describe the other. The page
+  // asks for the same text again under the new profile, so the difference
+  // between the two shows at once and not after a second press.
+  const wanted = current !== null || inFlight !== 0;
   toEditing();
   updateControls();
+  if (wanted) analyze();
 });
 
 segmented("format-control", (value) => {
@@ -355,10 +395,27 @@ async function loadSample(path: string): Promise<void> {
   if (engineReady) analyze();
 }
 
+/** Reports whether the answer in hand was asked about something the page has since changed. */
+function stale(): boolean {
+  return asked === null || asked.text !== input.value || asked.profile !== profile || asked.format !== format;
+}
+
+/** Runs the analysis that was wanted while another one was in flight. */
+function runQueued(): void {
+  if (!queued) return;
+  queued = false;
+  analyze();
+}
+
 function analyze(): void {
-  if (!engineReady || inFlight !== 0) return;
+  if (!engineReady) return;
+  if (inFlight !== 0) {
+    queued = true;
+    return;
+  }
   const text = input.value;
   if (text.trim() === "") return;
+  asked = { text, profile, format };
   inFlight = ++runId;
   document.body.classList.add("is-analyzing");
   strip.analyzing();

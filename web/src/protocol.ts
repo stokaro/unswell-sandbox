@@ -17,6 +17,18 @@ export interface RuleInfo {
   summary: string;
 }
 
+/** What one profile does with the catalog, by rule identifier in catalog order. */
+export interface ProfilePolicy {
+  /** The rules the profile runs. */
+  enabled: string[];
+  /** The rules among them whose match fails the gate on its own. */
+  forbid: string[];
+  /** The index at which a paragraph fails the gate. */
+  paragraphFailAt: number;
+  /** The index at which a sentence fails the gate. */
+  sentenceFailAt: number;
+}
+
 /** What the runtime announces once, before it accepts any analysis. */
 export interface ReadyInfo {
   /** The submodule tag this binary was built from, such as v0.1.0-alpha.3. */
@@ -29,6 +41,8 @@ export interface ReadyInfo {
   schema: string;
   rules: RuleInfo[];
   profiles: string[];
+  /** What each profile runs, keyed by its name. */
+  policies: Record<string, ProfilePolicy>;
   formats: string[];
   defaultName: string;
 }

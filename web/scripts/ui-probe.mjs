@@ -122,6 +122,11 @@ async function main() {
   });
   await send("Runtime.enable");
   await send("Page.enable");
+  // The profile directory outlives a run, and so does its HTTP cache. A page
+  // kept from an earlier run beside the script of this one is not the site
+  // under test.
+  await send("Network.enable");
+  await send("Network.setCacheDisabled", { cacheDisabled: true });
 
   const evaluate = async (expression) => {
     const r = await send("Runtime.evaluate", {
@@ -513,17 +518,38 @@ async function main() {
     "a short MDX page says how many prose words the index needs");
 
   // The purpose diagnosis comes from a rule that ships off; strict keeps it.
-  await evaluate('document.querySelector(\'#profile-control button[data-value="strict"]\').click()');
-  await runAndWaitForReport(evaluate, 'document.getElementById("analyze").click()');
+  // Picking the other profile analyzes the same text again without a press.
+  await runAndWaitForReport(evaluate,
+    'document.querySelector(\'#profile-control button[data-value="strict"]\').click()');
   const strictMdx = JSON.parse(await evaluate(`JSON.stringify({
     rules: [...document.querySelectorAll(".note-rule")].map(e => e.textContent),
     marks: [...document.querySelectorAll("#report .mark")].map(e => e.textContent).join(""),
+    count: document.getElementById("rail-count").textContent,
+    tags: [...document.querySelectorAll(".note")].filter(n => n.querySelector(".note-profile"))
+      .map(n => n.querySelector(".note-rule").textContent + ": " + n.querySelector(".note-profile").textContent),
+    note: document.getElementById("profile-note").textContent,
   })`));
+  check(/^\d+ · strict$/.test(strictMdx.count), "picking strict analyzes the text again under strict", strictMdx.count);
   check(strictMdx.rules.includes("filler.instruction-scaffolding"),
     "the strict profile delivers the complete purpose diagnosis", strictMdx.rules.join(","));
+  check(strictMdx.tags.includes("filler.instruction-scaffolding: only in strict"),
+    "a finding of a rule that technical leaves off says so on its card", strictMdx.tags.join(" | "));
+  check(/^strict: \d+ rules, \d+ of them fails? the gate on one match\. .*technical has \d+ rules? fewer.*findings here (is|are) absent in technical\.$/
+    .test(strictMdx.note),
+    "the line under the toolbar says what strict runs and how many findings it added", strictMdx.note);
   check(strictMdx.marks.includes("café messages") && strictMdx.marks.includes("tracing purposes"),
     "the MDX source mark retains both clauses and Unicode text");
-  await evaluate('document.querySelector(\'#profile-control button[data-value="technical"]\').click()');
+  await runAndWaitForReport(evaluate,
+    'document.querySelector(\'#profile-control button[data-value="technical"]\').click()');
+  const backToTechnical = JSON.parse(await evaluate(`JSON.stringify({
+    count: document.getElementById("rail-count").textContent,
+    tags: document.querySelectorAll(".note-profile").length,
+    note: document.getElementById("profile-note").textContent,
+  })`));
+  check(/^\d+ · technical$/.test(backToTechnical.count) && backToTechnical.tags === 0,
+    "picking technical analyzes again and no card carries a profile tag", JSON.stringify(backToTechnical));
+  check(/^technical: \d+ rules, \d+ of them fails? the gate on one match\. .*strict adds \d+ rules?/.test(backToTechnical.note),
+    "the line under the toolbar says what technical runs and what strict adds", backToTechnical.note);
 
   /* ---------- Python mode dims the code ---------- */
 

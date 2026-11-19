@@ -101,8 +101,16 @@ func readyInfo(engines *engineSet) map[string]any {
 		})
 	}
 	profiles := make([]any, 0, len(engineProfiles))
+	// What each profile runs. Building this needs every profile's engine at
+	// boot, which costs little beside the NLP provider that they share.
+	policies := map[string]any{}
 	for _, profile := range engineProfiles {
 		profiles = append(profiles, profile)
+		policy, err := engines.policy(profile)
+		if err != nil {
+			continue
+		}
+		policies[profile] = policy
 	}
 	return map[string]any{
 		"version":     buildVersion,
@@ -113,6 +121,7 @@ func readyInfo(engines *engineSet) map[string]any {
 		"schema":      engines.schemaVersion(),
 		"rules":       rules,
 		"profiles":    profiles,
+		"policies":    policies,
 		"formats":     supportedFormats(),
 		"defaultName": defaultSourceName,
 	}
