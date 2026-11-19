@@ -139,11 +139,10 @@ function renderIndex(report: Report): HTMLElement {
 /** Why a text has no index, in the terms the engine and the CLI use. */
 function missingIndex(report: Report, index: AISounding | undefined): string {
   if (!index) {
-    return "The index is measured on Markdown pages. This text was read as " +
-      `${report.format === "mdx" ? "MDX" : report.format}.`;
+    return `The index is measured on Markdown and MDX pages. This text was read as ${report.format}.`;
   }
   if (index.status === "too_short") {
-    return `${index.words} prose words. The index covers a Markdown page of 150 prose words or more.`;
+    return `${index.words} prose words. The index covers a Markdown or MDX page of 150 prose words or more.`;
   }
   return `The engine reported ${index.status}.`;
 }

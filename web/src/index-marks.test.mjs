@@ -217,10 +217,10 @@ test("a text without an index says why", (t) => {
   short.aiSounding = { status: "too_short", index: 0, words: 42, signals: [], marks: [], counted: 0, fixable: 0 };
   const card = (report) => all(renderInto(report, null)).find((node) => node.className === "index-card");
   assert.equal(card(short).dataset.level, "none");
-  assert.match(card(short).textContent, /42 prose words\. The index covers a Markdown page of 150 prose words or more\./);
+  assert.match(card(short).textContent, /42 prose words\. The index covers a Markdown or MDX page of 150 prose words or more\./);
 
   const python = reportAt("elevated");
   delete python.aiSounding;
   python.format = "python";
-  assert.match(card(python).textContent, /The index is measured on Markdown pages\. This text was read as python\./);
+  assert.match(card(python).textContent, /The index is measured on Markdown and MDX pages\. This text was read as python\./);
 });

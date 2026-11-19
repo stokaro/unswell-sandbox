@@ -6,7 +6,7 @@ account, nothing installed, and the text never leaves the page.
 
 Paste English prose, a Markdown or MDX document, or a Python file. The engine
 marks what it found inline and lists each finding as a note in the margin.
-A Markdown page of 150 prose words or more also gets its AI-sounding index,
+A Markdown or MDX page of 150 prose words or more also gets its AI-sounding index,
 with every mark the index counts shown in the text, and one button makes the
 replacements of `unswell fix`.
 Choose MDX for a document with imports, JavaScript expressions or JSX components.
@@ -90,8 +90,8 @@ From a clean build on darwin/arm64 with go1.27.1, at the pin
 | boot to `ready()`, headless Chrome, localhost | ~560 ms |
 | one analysis of the AI-flavored sample | 150–190 ms |
 
-The current build is `v0.1.0-alpha.21` with 62 rules. Its WASM is 59,432,451
-bytes raw and 24,221,288 bytes with `gzip -9`, built with go1.27.3 on
+The current build is `v0.1.0-alpha.22` with 62 rules. Its WASM is 59,430,440
+bytes raw and 24,222,083 bytes with `gzip -9`, built with go1.27.3 on
 darwin/arm64. About 7 MB of the raw size, 1.4 MB compressed, is the CLI's
 report package, which the page links to print the CLI's own words at each mark
 of the AI-sounding index. The timing figures above describe the earlier
@@ -232,7 +232,7 @@ what the page renders. Two parts are derived rather than forwarded:
 ## The AI-sounding index and the fix
 
 Since `v0.1.0-alpha.10` the engine gives a Markdown page of 150 prose words or
-more an index from 0 to 100 with the levels `low`, `elevated` and `high`, and
+more, and since `v0.1.0-alpha.22` an MDX page too, an index from 0 to 100 with the levels `low`, `elevated` and `high`, and
 each counted mark carries the replacement that removes it. The page shows the
 index in a card of the rail, draws every located mark in the document in a
 color of its own, and lists the marks under the findings.
@@ -263,7 +263,7 @@ follows it step by step, together with the line `unswell fix` prints for a
 page.
 
 `test/ai-sounding.mjs` holds both to the published binary. The files in
-`test/fixtures/cli-v0.1.0-alpha.21` are what that binary printed and wrote for
+`test/fixtures/cli-v0.1.0-alpha.22` are what that binary printed and wrote for
 the Markdown sample, and the test requires the same index, the same line at
 every mark, the same fixed text byte for byte, and the same summary line. A
 pin that changes any of them fails the build until the fixtures are made

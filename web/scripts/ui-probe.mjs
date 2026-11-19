@@ -322,7 +322,7 @@ async function main() {
   // and whether the button puts the CLI's fixed text into the box.
   const sampleText = await (await fetch(new URL("samples/ai-flavored.md", base))).text();
   const cliFixed = readFileSync(
-    new URL("../../test/fixtures/cli-v0.1.0-alpha.21/ai-flavored.fixed.md", import.meta.url), "utf8");
+    new URL("../../test/fixtures/cli-v0.1.0-alpha.22/ai-flavored.fixed.md", import.meta.url), "utf8");
   const indexState = `JSON.stringify({
     level: document.querySelector(".index-card")?.dataset.level ?? "",
     value: document.querySelector(".index-value")?.textContent ?? "",
@@ -454,7 +454,7 @@ async function main() {
       indexText: document.querySelector(".index-card")?.textContent ?? "",
     });
   })()`));
-  check(silent.indexLevel === "none" && /prose words\. The index covers a Markdown page of 150/.test(silent.indexText),
+  check(silent.indexLevel === "none" && /prose words\. The index covers a Markdown or MDX page of 150/.test(silent.indexText),
     "a page too short for the index says so", silent.indexText.slice(0, 120));
   check(silent.shown, "the rail says why the origin channel produced nothing");
   check(silent.badges === 0, "no estimate is drawn while the channel is unavailable",
@@ -508,9 +508,9 @@ async function main() {
   check(mdx.dim.includes("import TracePreview") && mdx.dim.includes("<TracePreview"),
     "MDX imports and JSX syntax are dimmed");
   check(mdx.font.includes("Crimson Pro"), "MDX retains the prose font", mdx.font);
-  check(/no index.*Markdown pages\. This text was read as MDX/.test(
+  check(/prose words\. The index covers a Markdown or MDX page of 150/.test(
     await evaluate('document.querySelector(".index-card")?.textContent ?? ""')),
-    "an MDX page says the index is measured on Markdown pages");
+    "a short MDX page says how many prose words the index needs");
 
   // The purpose diagnosis comes from a rule that ships off; strict keeps it.
   await evaluate('document.querySelector(\'#profile-control button[data-value="strict"]\').click()');

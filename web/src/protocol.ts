@@ -132,7 +132,7 @@ export interface IndexMark {
 }
 
 /**
- * The engine's AI-sounding index of a Markdown page.
+ * The engine's AI-sounding index of a Markdown or MDX page.
  *
  * The number, the level, the counts and the marks are the engine's. The words
  * (`summary`, each mark's `note`, `unlisted`, `advice`, `about`) are lines of
