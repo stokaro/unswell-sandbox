@@ -4,7 +4,7 @@
  * The page shows three things here that a visitor can compare with the tool
  * they install: the index of a Markdown page, what to do at each mark, and the
  * text after the replacements of `unswell fix`. The fixtures under
- * test/fixtures/cli-v0.1.0-alpha.21 are what the published binary wrote for the
+ * test/fixtures/cli-v0.1.0-alpha.22 are what the published binary wrote for the
  * Markdown sample, and every one of the three is compared with them.
  *
  * The words beside a mark are lines of the CLI's own text report, cut out of
@@ -19,12 +19,12 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { boot, repoRoot } from "./harness.mjs";
 
-const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.21");
+const fixtures = join(repoRoot, "test/fixtures/cli-v0.1.0-alpha.22");
 const read = (path) => readFile(path, "utf8");
 
 const runtime = await boot();
-assert.equal(runtime.info.version, "v0.1.0-alpha.21",
-  "the fixtures are the output of the alpha.21 binary; make them again for another pin");
+assert.equal(runtime.info.version, "v0.1.0-alpha.22",
+  "the fixtures are the output of the alpha.22 binary; make them again for another pin");
 
 const sample = await read(join(repoRoot, "web/samples/ai-flavored.md"));
 const bytes = Buffer.from(sample);
@@ -180,7 +180,7 @@ assert.equal(untouchedRhythm.text, even);
 assert.match(untouchedRhythm.summary, /marks low: left as it is\.$/);
 console.log(`ai-sounding: a page of even sentences is ${rhythm.level} by its rhythm (${rhythm.rhythmReading}), and the fix leaves it`);
 
-/* ---------- the index needs a Markdown page of 150 prose words ---------- */
+/* ---------- the index needs a Markdown or MDX page of 150 prose words ---------- */
 
 const words = (count) => `# Page\n\n${Array.from({ length: count }, (_, i) => (i % 9 === 8 ? "word." : "word")).join(" ")}\n`;
 const short = await runtime.analyze(words(148));
@@ -194,17 +194,33 @@ const shortFix = await runtime.fix(words(148), "technical", "markdown", true);
 assert.equal(shortFix.indexed, false);
 assert.equal(shortFix.changed, false);
 
-for (const [format, text] of [
-  ["mdx", await read(join(repoRoot, "web/samples/correlate-messages.mdx"))],
-  ["python", await read(join(repoRoot, "web/samples/retry_client.py"))],
-]) {
-  const other = await runtime.analyze(text, "technical", format);
-  assert.equal(other.aiSounding, undefined, `${format}: the engine measures no index outside Markdown`);
-  const untouched = await runtime.fix(text, "technical", format, true);
-  assert.equal(untouched.indexed, false);
-  assert.equal(untouched.text, text);
-}
-console.log("ai-sounding: no index under 150 prose words, and none outside Markdown");
+// The MDX sample is a short page: it has the field and no index yet.
+const mdxSample = await read(join(repoRoot, "web/samples/correlate-messages.mdx"));
+const shortMDX = await runtime.analyze(mdxSample, "technical", "mdx");
+assert.equal(shortMDX.aiSounding.status, "too_short");
+const untouchedMDX = await runtime.fix(mdxSample, "technical", "mdx", true);
+assert.equal(untouchedMDX.indexed, false);
+assert.equal(untouchedMDX.text, mdxSample);
+
+// A longer MDX page gets the index of its prose. A dash in an attribute is
+// code: it adds no mark, and the fix leaves it where it is.
+const component = `<Note title="A dash — in an attribute">\n  The note warns — then it stops.\n</Note>\n\n`;
+const longMDX = `import Note from './Note.astro';\n\n${component}${words(160)}`;
+const indexedMDX = await runtime.analyze(longMDX, "technical", "mdx");
+assert.equal(indexedMDX.aiSounding.status, "available");
+assert.equal(indexedMDX.aiSounding.marks.filter((mark) => mark.signal === "em-dash").length, 1);
+const fixedMDX = await runtime.fix(longMDX, "technical", "mdx", true);
+assert.equal(fixedMDX.indexed, true);
+assert.ok(fixedMDX.text.includes(`<Note title="A dash — in an attribute">`), "the attribute keeps its dash");
+assert.ok(fixedMDX.text.includes("The note warns, then it stops."), "the prose inside the component is fixed");
+
+const python = await read(join(repoRoot, "web/samples/retry_client.py"));
+const other = await runtime.analyze(python, "technical", "python");
+assert.equal(other.aiSounding, undefined, "python: the engine measures no index outside Markdown and MDX");
+const untouched = await runtime.fix(python, "technical", "python", true);
+assert.equal(untouched.indexed, false);
+assert.equal(untouched.text, python);
+console.log("ai-sounding: no index under 150 prose words, one for a longer MDX page, and none for other formats");
 
 /* ---------- more marks than the CLI lists ---------- */
 
