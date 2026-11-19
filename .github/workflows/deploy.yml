@@ -71,6 +71,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
+      actions: read
       contents: read
       pages: write
       id-token: write
@@ -262,6 +263,30 @@ jobs:
         uses: actions/upload-pages-artifact@v5
         with:
           path: _site
+
+      # The deploy step lists the artifacts of this run and takes the one it
+      # finds. The listing can lag the upload: a deploy that started right
+      # after a finished upload found no artifact. A second attempt of this job
+      # cannot repair that, because the run then holds two artifacts of one
+      # name. So the job waits here until the listing shows exactly one.
+      - name: Wait until the Pages artifact is listed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          count=0
+          for _ in $(seq 1 30); do
+            count=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=github-pages" --jq '.total_count')
+            if [ "$count" = "1" ]; then
+              exit 0
+            fi
+            if [ "$count" -gt 1 ]; then
+              echo "this run holds $count Pages artifacts; a repeated attempt cannot deploy, start a new run on main" >&2
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "the Pages artifact is not listed after 60 seconds" >&2
+          exit 1
 
       - name: Deploy
         id: deployment
