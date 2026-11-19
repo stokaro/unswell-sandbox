@@ -7,6 +7,7 @@
  */
 
 import type { AISounding, Finding, FixResult, IndexMark, Report } from "./protocol.ts";
+import { type ProfileDifference, profileTag } from "./profiles.ts";
 import { band, formatScore, indexMarkId, listsIndexMarks, severityOf } from "./render.ts";
 
 export interface RailHandles {
@@ -25,9 +26,15 @@ export interface FixNote {
 
 /**
  * Draws the two stat cards, the AI-sounding index, one card per finding, and
- * the marks of the index.
+ * the marks of the index. With a profile difference, a finding that the base
+ * profile would not have reported the same way says so on its card.
  */
-export function renderRail(body: HTMLElement, report: Report, fixNote: FixNote | null = null): RailHandles {
+export function renderRail(
+  body: HTMLElement,
+  report: Report,
+  fixNote: FixNote | null = null,
+  more: ProfileDifference | null = null,
+): RailHandles {
   body.replaceChildren();
   const notes = new Map<string, HTMLElement>();
 
@@ -39,12 +46,17 @@ export function renderRail(body: HTMLElement, report: Report, fixNote: FixNote |
   if (fixNote) body.append(renderFixNote(fixNote));
   body.append(renderIndex(report));
 
-  renderFindings(body, report, notes);
+  renderFindings(body, report, notes, more);
   renderIndexMarks(body, report, notes);
   return { notes };
 }
 
-function renderFindings(body: HTMLElement, report: Report, notes: Map<string, HTMLElement>): void {
+function renderFindings(
+  body: HTMLElement,
+  report: Report,
+  notes: Map<string, HTMLElement>,
+  more: ProfileDifference | null,
+): void {
   if (report.findings.length === 0) {
     const clean = document.createElement("div");
     clean.className = "note-clean";
@@ -65,7 +77,7 @@ function renderFindings(body: HTMLElement, report: Report, notes: Map<string, HT
   }
 
   report.findings.forEach((finding, index) => {
-    const note = renderNote(finding, index);
+    const note = renderNote(finding, index, more);
     notes.set(finding.id, note);
     body.append(note);
   });
@@ -313,7 +325,7 @@ function label(text: string): HTMLElement {
   return element;
 }
 
-function renderNote(finding: Finding, index: number): HTMLElement {
+function renderNote(finding: Finding, index: number, more: ProfileDifference | null): HTMLElement {
   const severity = severityOf(finding);
   const note = document.createElement("button");
   note.type = "button";
@@ -349,6 +361,13 @@ function renderNote(finding: Finding, index: number): HTMLElement {
     meta.append(document.createTextNode(` · ${finding.related.length + 1} text locations`));
   }
   meta.append(document.createTextNode(` · +${formatScore(finding.points)} pts`));
+  const tag = profileTag(more, finding);
+  if (tag !== "") {
+    const profileNote = document.createElement("span");
+    profileNote.className = "note-profile";
+    profileNote.textContent = tag;
+    meta.append(document.createTextNode(" · "), profileNote);
+  }
 
   note.append(badge, rule, message);
   if (finding.suggestion) {
@@ -361,7 +380,8 @@ function renderNote(finding: Finding, index: number): HTMLElement {
   note.setAttribute(
     "aria-label",
     `Finding ${index + 1} of rule ${finding.ruleId}: ${finding.message}. ` +
-      (finding.suggestion ? `${finding.suggestion} ` : "") + "Show it in the text.",
+      (finding.suggestion ? `${finding.suggestion} ` : "") + (tag !== "" ? `Reported ${tag}. ` : "") +
+      "Show it in the text.",
   );
   return note;
 }

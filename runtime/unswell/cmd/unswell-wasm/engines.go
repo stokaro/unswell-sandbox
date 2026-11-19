@@ -119,6 +119,41 @@ func (s *engineSet) engine(profile string) (*unswell.Engine, error) {
 	return engine, nil
 }
 
+// policy says what one profile does: the rules it runs, those of them whose
+// match fails the gate on its own, and the index at which a paragraph or a
+// sentence fails the gate. The identifiers come in catalog order.
+//
+// The page shows this beside the profile control, because two profiles can
+// return reports that look alike at a glance. It asks the engine and keeps no
+// list of its own, so a profile that changes upstream changes here.
+func (s *engineSet) policy(profile string) (map[string]any, error) {
+	engine, err := s.engine(profile)
+	if err != nil {
+		return nil, err
+	}
+	effective, err := engine.PolicyForFile(defaultSourceName)
+	if err != nil {
+		return nil, fmt.Errorf("read the %s policy: %w", profile, err)
+	}
+	enabled, forbid := []any{}, []any{}
+	for _, descriptor := range engine.Catalog() {
+		settings, ok := effective.Rules[descriptor.ID]
+		if !ok || !settings.Enabled {
+			continue
+		}
+		enabled = append(enabled, descriptor.ID)
+		if settings.Gate == "forbid" {
+			forbid = append(forbid, descriptor.ID)
+		}
+	}
+	return map[string]any{
+		"enabled":         enabled,
+		"forbid":          forbid,
+		"paragraphFailAt": effective.Gate.Paragraph.FailAt,
+		"sentenceFailAt":  effective.Gate.Sentence.FailAt,
+	}, nil
+}
+
 func (s *engineSet) catalog() []rule.Descriptor {
 	engine, err := s.engine(engineProfiles[0])
 	if err != nil {
