@@ -90,8 +90,8 @@ From a clean build on darwin/arm64 with go1.27.1, at the pin
 | boot to `ready()`, headless Chrome, localhost | ~560 ms |
 | one analysis of the AI-flavored sample | 150–190 ms |
 
-The current build is `v0.1.0-alpha.23` with 62 rules. Its WASM is 59,430,440
-bytes raw and 24,222,069 bytes with `gzip -9`, built with go1.27.3 on
+The current build is `v0.1.0-alpha.24` with 62 rules. Its WASM is 59,430,440
+bytes raw and 24,222,076 bytes with `gzip -9`, built with go1.27.3 on
 darwin/arm64. About 7 MB of the raw size, 1.4 MB compressed, is the CLI's
 report package, which the page links to print the CLI's own words at each mark
 of the AI-sounding index. The timing figures above describe the earlier
@@ -263,7 +263,7 @@ follows it step by step, together with the line `unswell fix` prints for a
 page.
 
 `test/ai-sounding.mjs` holds both to the published binary. The files in
-`test/fixtures/cli-v0.1.0-alpha.23` are what that binary printed and wrote for
+`test/fixtures/cli-v0.1.0-alpha.24` are what that binary printed and wrote for
 the Markdown sample, and the test requires the same index, the same line at
 every mark, the same fixed text byte for byte, and the same summary line. A
 pin that changes any of them fails the build until the fixtures are made
